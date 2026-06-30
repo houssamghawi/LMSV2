@@ -1,0 +1,19 @@
+{
+  "status": "commited",
+  "type": "frontend",
+  "scope": "codebase",
+  "localEndpoint": "http://localhost:3000",
+  "backendAuthType": "basic token",
+  "backendUsername": "admin2002admin@gmail.com",
+  "backendPassword": "Adeeb123456789.",
+  "executionArgs": {
+    "projectName": "LMS-main",
+    "projectPath": "C:\\Users\\Lenovo\\Desktop\\LMS-main",
+    "testIds": [],
+    "additionalInstruction": "",
+    "envs": {
+      "API_KEY": "sk-user-E-s7608Gj3DfgS6N5s6VaQAtAIaKPkwALSZTf2rYZBSky40a2KtkEfOaTe72yq1rY-1qqZgQsllqSCl5u3VmzHx6id3iEU-xwBPcKctki55sRdEamI8ZOC3GD6ih3XQuEAc"
+    }
+  },
+  "proxy": "http://8322acf1-41b5-4f80-80fa-5edff0ca6fb6:gYEnZrLxtaVIcJKRpyUn6woDUPy0zZFa@tun.testsprite.com:8080"
+}

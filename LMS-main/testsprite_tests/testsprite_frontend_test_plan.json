@@ -1,0 +1,714 @@
+[
+  {
+    "id": "TC001",
+    "title": "User Registration Success",
+    "description": "Verify user registration succeeds with valid data and user role selection for student and instructor.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to registration page"
+      },
+      {
+        "type": "action",
+        "description": "Input valid first name, last name, email, password, confirm password, and select user role student"
+      },
+      {
+        "type": "action",
+        "description": "Submit registration form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify account created successfully and email exists in database with correct role"
+      },
+      {
+        "type": "action",
+        "description": "Repeat registration with user role instructor"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify instructor account created successfully"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "User Registration Validation Errors",
+    "description": "Verify registration fails with invalid input data or missing required fields.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to registration page"
+      },
+      {
+        "type": "action",
+        "description": "Input invalid email format and short password"
+      },
+      {
+        "type": "action",
+        "description": "Submit registration form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify validation errors received for email and password length"
+      },
+      {
+        "type": "action",
+        "description": "Omit mandatory fields such as firstName and userRole"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify validation errors for missing required fields"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "User Login Success",
+    "description": "Verify login succeeds with correct credentials and returns JWT session with expiry.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to login page"
+      },
+      {
+        "type": "action",
+        "description": "Input registered email and correct password"
+      },
+      {
+        "type": "action",
+        "description": "Submit login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify login successful, JWT token issued, and session expiry is 30 days"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "User Login Failure",
+    "description": "Verify login fails with invalid credentials and proper error is returned.",
+    "category": "error handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to login page"
+      },
+      {
+        "type": "action",
+        "description": "Input unregistered email or incorrect password"
+      },
+      {
+        "type": "action",
+        "description": "Submit login form"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify login failed with status 401 and error message invalid credentials"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Course CRUD Operations by Instructor",
+    "description": "Verify that an instructor can create, read, update, and delete courses, including setting category, pricing, thumbnails, and publish status, with ownership enforcement.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as instructor"
+      },
+      {
+        "type": "action",
+        "description": "Create new course with valid title, description, category, price, and thumbnail"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify course is created and associated with instructor"
+      },
+      {
+        "type": "action",
+        "description": "Retrieve course details and verify correct data"
+      },
+      {
+        "type": "action",
+        "description": "Update course details including price and publish status"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify course update is reflected"
+      },
+      {
+        "type": "action",
+        "description": "Delete the course"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify course no longer exists"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Course CRUD Permission Enforcement",
+    "description": "Verify only course owner instructor can update or delete course, others receive forbidden errors.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as Instructor A and create a course"
+      },
+      {
+        "type": "action",
+        "description": "Login as Instructor B"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to update course created by Instructor A"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify update is rejected with 403 Forbidden"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to delete course created by Instructor A"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify delete is rejected with 403 Forbidden"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Module Management CRUD",
+    "description": "Verify creation, editing, reordering, publication, and retrieval of course modules with ownership checks.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as course instructor"
+      },
+      {
+        "type": "action",
+        "description": "Create multiple modules within a course"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify modules are listed in created order"
+      },
+      {
+        "type": "action",
+        "description": "Reorder modules and change publish status"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify module order and publish states updated accordingly"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access modules for a course not owned"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied with 403 Forbidden"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Lesson Management CRUD and Publishing",
+    "description": "Verify lesson creation, editing, ordering, publishing, and progress tracking within modules, enforcing ownership permissions.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as instructor"
+      },
+      {
+        "type": "action",
+        "description": "Create lessons within a module, setting order and publish status"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify lessons are created with correct metadata"
+      },
+      {
+        "type": "action",
+        "description": "Edit lesson content and reorder lessons"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify lesson updates are persisted"
+      },
+      {
+        "type": "action",
+        "description": "Attempt lesson management on module not owned"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access denied with 403 Forbidden"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Course Enrollment Workflows for Free and Paid Courses",
+    "description": "Verify students can successfully enroll in free courses instantly and paid courses via MockPay payment simulation.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as student"
+      },
+      {
+        "type": "action",
+        "description": "Enroll in a free course"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify enrollment record created with status active"
+      },
+      {
+        "type": "action",
+        "description": "Enroll in a paid course and initiate MockPay payment"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify payment simulation is triggered and pending enrollment is created"
+      },
+      {
+        "type": "action",
+        "description": "Simulate MockPay payment confirmation webhook with valid data"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify enrollment status updated to active after payment"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Enrollment Payment Status and Error Handling",
+    "description": "Verify payment status checks return correct information and invalid payment data results in errors.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Request payment status with valid referenceId"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify payment status response returns expected status"
+      },
+      {
+        "type": "action",
+        "description": "Request payment status with non-existing referenceId"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify 404 Not Found error returned"
+      },
+      {
+        "type": "action",
+        "description": "Send MockPay payment webhook with invalid data"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify 400 Bad Request error returned"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Quiz Attempt with Time Limits and Max Attempts Enforcement",
+    "description": "Verify quiz attempts respect time limits, max attempts, and randomized question order with accurate scoring and pass/fail indication.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as student"
+      },
+      {
+        "type": "action",
+        "description": "Start a quiz and verify questions are randomized"
+      },
+      {
+        "type": "action",
+        "description": "Submit answers within time limit"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify auto-grading occurs and score, pass/fail status returned"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to start quiz again until max attempts reached"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify further attempts are rejected"
+      },
+      {
+        "type": "action",
+        "description": "Simulate submitting quiz after time expired"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify attempt marked expired and not graded"
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Progress Tracking Updates and Reports",
+    "description": "Verify lesson watch time updates, state transitions, and generation of accurate progress reports for students.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as student and start lesson"
+      },
+      {
+        "type": "action",
+        "description": "Send watch progress updates with states started, in-progress, completed and last watched time"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify watch records updated accordingly"
+      },
+      {
+        "type": "action",
+        "description": "Request progress report for course"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify report reflects accurate completion and watch times"
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Certificate Generation on Course Completion",
+    "description": "Verify PDF certificates are generated only when 100% course progress and all required quizzes are passed, enforcing access restrictions and rate limits.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as student who completed course and passed all quizzes"
+      },
+      {
+        "type": "action",
+        "description": "Request certificate download for course"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify certificate PDF is generated and accessible"
+      },
+      {
+        "type": "action",
+        "description": "Request certificate again rapidly exceeding rate limits"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify rate limit exceeded error (429) is returned"
+      },
+      {
+        "type": "action",
+        "description": "Login as student who did not complete course or failed quizzes"
+      },
+      {
+        "type": "action",
+        "description": "Request certificate download"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access denied with 403 Forbidden"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Admin Dashboard Data Integrity and Access Control",
+    "description": "Verify admin dashboard shows correct statistics and allows management operations only for admin users.",
+    "category": "functional",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as admin"
+      },
+      {
+        "type": "action",
+        "description": "Access admin dashboard page"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify dashboard statistics include total users, courses, enrollments, and revenue with correct numbers"
+      },
+      {
+        "type": "action",
+        "description": "Perform bulk user status changes and course updates"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify bulk operations succeed and data updated accordingly"
+      },
+      {
+        "type": "action",
+        "description": "Login as non-admin user and access admin dashboard"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access denied with 403 Forbidden"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "User Profile Management - View and Edit Profile",
+    "description": "Verify user can retrieve their profile data, update editable fields, and change password with validation.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as user"
+      },
+      {
+        "type": "action",
+        "description": "Fetch current user profile"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify profile data returned contains expected fields"
+      },
+      {
+        "type": "action",
+        "description": "Update profile fields such as firstName and lastName"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify updates are saved and reflected on subsequent fetch"
+      },
+      {
+        "type": "action",
+        "description": "Change password with correct current password and compliant new password"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify password changed successfully"
+      },
+      {
+        "type": "action",
+        "description": "Attempt password change with incorrect current password"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify error returned"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "User Profile Management - Avatar Upload Validation",
+    "description": "Verify avatar image uploads accept valid files within limits and reject incorrect formats or oversized files.",
+    "category": "error handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as user"
+      },
+      {
+        "type": "action",
+        "description": "Upload avatar image within allowed size and valid format"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify upload succeeds and avatar is updated"
+      },
+      {
+        "type": "action",
+        "description": "Upload avatar image exceeding size limit"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify 413 Payload Too Large error returned"
+      },
+      {
+        "type": "action",
+        "description": "Upload avatar with invalid file type"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify 400 Bad Request error returned"
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Course Reviews Submission and Admin Moderation",
+    "description": "Verify students can submit course reviews and ratings and that admins can moderate (approve, reject) these reviews.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as student"
+      },
+      {
+        "type": "action",
+        "description": "Submit review and rating for an enrolled course"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify review is stored with pending status"
+      },
+      {
+        "type": "action",
+        "description": "Login as admin"
+      },
+      {
+        "type": "action",
+        "description": "Access admin reviews moderation panel"
+      },
+      {
+        "type": "action",
+        "description": "Approve and reject submitted reviews"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify reviews status updated and published/hidden accordingly"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Category Management CRUD by Admin",
+    "description": "Verify admin users can create, edit, delete, and list categories for course organization.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as admin"
+      },
+      {
+        "type": "action",
+        "description": "Create a new category with valid name and description"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify category is created and listed"
+      },
+      {
+        "type": "action",
+        "description": "Update existing category"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify category updates are saved"
+      },
+      {
+        "type": "action",
+        "description": "Delete an existing category"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify category is no longer listed"
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Public Course Catalog Search and Filtering",
+    "description": "Verify that the public course catalog can be searched and filtered by categories, with correct course previews displayed.",
+    "category": "functional",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to public course catalog"
+      },
+      {
+        "type": "action",
+        "description": "Perform search with keywords"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify search results contain matching courses with correct preview details"
+      },
+      {
+        "type": "action",
+        "description": "Apply category filters"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify results filtered correctly by selected categories"
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "Authorization and Permission Checks",
+    "description": "Verify the role-based access control system correctly allows or forbids access to resources based on role and ownership to prevent IDOR attacks.",
+    "category": "security",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Login as student"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to access instructor-only APIs or modify others' data"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access is denied with 403 Forbidden"
+      },
+      {
+        "type": "action",
+        "description": "Login as instructor"
+      },
+      {
+        "type": "action",
+        "description": "Attempt to modify courses or modules not owned"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify access denied with 403 Forbidden"
+      },
+      {
+        "type": "action",
+        "description": "Login as admin"
+      },
+      {
+        "type": "action",
+        "description": "Access and modify any user, course, or enrollment"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify admin override capabilities work correctly"
+      }
+    ]
+  }
+]
