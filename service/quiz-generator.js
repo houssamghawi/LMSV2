@@ -15,6 +15,24 @@ import {
 import { buildQuizGenerationMessages } from "@/lib/quiz-generation-prompt";
 
 const LOG_PREFIX = "[QUIZ_GENERATOR]";
+const MAX_TOP_UP_ATTEMPTS = 15;
+
+/** Types that must never be accepted from Gemini — discarded and replaced. */
+const FORBIDDEN_QUESTION_TYPES = new Set([
+    "essay",
+    "short_answer",
+    "shortanswer",
+    "open_ended",
+    "openended",
+    "long_answer",
+    "longanswer",
+    "free_response",
+    "freeresponse",
+    "descriptive",
+    "narrative",
+    "written",
+    "text_response"
+]);
 
 const TYPE_ALIASES = {
     single: "single",
@@ -25,11 +43,7 @@ const TYPE_ALIASES = {
     true_false: "true_false",
     truefalse: "true_false",
     tf: "true_false",
-    boolean: "true_false",
-    short_answer: "short_answer",
-    shortanswer: "short_answer",
-    essay: "short_answer",
-    open_ended: "short_answer"
+    boolean: "true_false"
 };
 
 const DIFFICULTY_ALIASES = {
@@ -60,8 +74,8 @@ const quizGenerationResponseSchema = z.object({
     questions: z.array(coercedQuestionSchema)
 });
 
-/** JSON Schema passed to Gemini structured-output mode. */
-const GEMINI_RESPONSE_JSON_SCHEMA = {
+/** Base JSON Schema passed to Gemini structured-output mode. */
+const GEMINI_RESPONSE_JSON_SCHEMA_BASE = {
     type: "object",
     properties: {
         questions: {
@@ -72,7 +86,7 @@ const GEMINI_RESPONSE_JSON_SCHEMA = {
                     draftId: { type: "string" },
                     type: {
                         type: "string",
-                        enum: ["single", "true_false", "short_answer"]
+                        enum: ["single", "true_false"]
                     },
                     difficulty: {
                         type: "string",
@@ -106,6 +120,10 @@ const GEMINI_RESPONSE_JSON_SCHEMA = {
     required: ["questions"]
 };
 
+function buildResponseJsonSchema() {
+    return GEMINI_RESPONSE_JSON_SCHEMA_BASE;
+}
+
 function resolveQuizModel(override) {
     const fromEnv = process.env.GEMINI_QUIZ_MODEL?.trim();
     const raw = override || fromEnv || DEFAULT_QUIZ_MODEL;
@@ -113,7 +131,7 @@ function resolveQuizModel(override) {
     const remapped = GEMINI_DEPRECATED_MODEL_ALIASES[normalized];
     if (remapped) {
         console.warn(
-            `${LOG_PREFIX} Model "${normalized}" is retired on the Gemini API; using "${remapped}" instead. Update GEMINI_QUIZ_MODEL in .env.`
+            `${LOG_PREFIX} Model "${normalized}" is retired; using "${remapped}" instead. Update GEMINI_QUIZ_MODEL in .env.`
         );
         return remapped;
     }
@@ -121,11 +139,7 @@ function resolveQuizModel(override) {
 }
 
 function buildModelCandidates(preferredModel) {
-    const candidates = [
-        preferredModel,
-        preferredModel.endsWith("-latest") ? null : `${preferredModel}-latest`,
-        ...GEMINI_QUIZ_MODEL_FALLBACKS
-    ];
+    const candidates = [preferredModel, ...GEMINI_QUIZ_MODEL_FALLBACKS];
     return candidates.filter((m, i, arr) => m && arr.indexOf(m) === i);
 }
 
@@ -152,14 +166,29 @@ function quoteIsGrounded(normalizedSource, quote) {
     if (!normalizedSource || !quote) return false;
     const q = String(quote).trim().replace(/\s+/g, " ").toLowerCase();
     if (q.length === 0) return false;
-    const src = String(normalizedSource).toLowerCase();
+    const src = String(normalizedSource).replace(/\s+/g, " ").toLowerCase();
     return src.includes(q);
 }
 
 function normalizeTypeAlias(rawType) {
     if (!rawType) return null;
     const key = String(rawType).toLowerCase().replace(/[\s-]+/g, "_");
+    if (FORBIDDEN_QUESTION_TYPES.has(key)) return null;
     return TYPE_ALIASES[key] || (QUIZ_QUESTION_TYPES.includes(key) ? key : null);
+}
+
+function readRawType(raw) {
+    return raw?.type ?? raw?.question_type ?? raw?.questionType ?? null;
+}
+
+function isForbiddenRawQuestion(raw) {
+    const candidates = [readRawType(raw), raw?.type, raw?.question_type, raw?.questionType];
+    for (const candidate of candidates) {
+        if (!candidate) continue;
+        const key = String(candidate).toLowerCase().replace(/[\s-]+/g, "_");
+        if (FORBIDDEN_QUESTION_TYPES.has(key)) return true;
+    }
+    return false;
 }
 
 function normalizeDifficultyAlias(rawDifficulty) {
@@ -169,7 +198,6 @@ function normalizeDifficultyAlias(rawDifficulty) {
 }
 
 function normalizeOptions(options, type) {
-    if (type === "short_answer") return [];
     if (type === "true_false") {
         return [
             { id: "t", text: "True" },
@@ -198,8 +226,6 @@ function resolveCorrectOptionIds(type, raw) {
     }
 
     const correctAnswer = raw.correct_answer ?? raw.correctAnswer;
-    if (type === "short_answer") return [];
-
     if (type === "true_false") {
         if (correctAnswer == null || String(correctAnswer).trim() === "") return [];
         return normalizeTrueFalseAnswer(correctAnswer);
@@ -224,12 +250,13 @@ function normalizeTrueFalseAnswer(answer) {
 
 /**
  * Accept Gemini output in either the application schema (draftId, text, …)
- * or legacy/alternate shapes (id, question_text, correct_answer, essay, mcq).
+ * or legacy/alternate shapes (id, question_text, correct_answer, mcq).
  */
 export function coerceRawQuestion(raw) {
     if (!raw || typeof raw !== "object") return null;
+    if (isForbiddenRawQuestion(raw)) return null;
 
-    const type = normalizeTypeAlias(raw.type);
+    const type = normalizeTypeAlias(readRawType(raw));
     const difficulty = normalizeDifficultyAlias(raw.difficulty);
     const text = String(
         raw.text ?? raw.question_text ?? raw.question ?? raw.stem ?? ""
@@ -239,16 +266,8 @@ export function coerceRawQuestion(raw) {
 
     const options = normalizeOptions(raw.options, type);
     let correctOptionIds = resolveCorrectOptionIds(type, raw);
-    let modelAnswer = String(raw.modelAnswer ?? raw.model_answer ?? "").trim();
 
-    if (type === "short_answer") {
-        if (!modelAnswer) {
-            const fallback = raw.correct_answer ?? raw.correctAnswer;
-            if (fallback != null) modelAnswer = String(fallback).trim();
-        }
-        correctOptionIds = [];
-    } else if (type === "single" && correctOptionIds.length === 0 && options.length > 0) {
-        // Some models return the option text instead of the id.
+    if (type === "single" && correctOptionIds.length === 0 && options.length > 0) {
         const answerText = String(raw.correct_answer ?? raw.correctAnswer ?? "").trim();
         const match = options.find(
             (o) => o.id === answerText || o.text.trim().toLowerCase() === answerText.toLowerCase()
@@ -263,7 +282,7 @@ export function coerceRawQuestion(raw) {
         text,
         options,
         correctOptionIds,
-        modelAnswer,
+        modelAnswer: "",
         explanation: String(raw.explanation ?? "").trim(),
         sourceQuote: String(raw.sourceQuote ?? raw.source_quote ?? "").trim(),
         instructorState: raw.instructorState ?? raw.instructor_state ?? "untouched"
@@ -282,31 +301,56 @@ export function normalizeDraftQuestion(q) {
         text: coerced.text,
         options: coerced.options,
         correctOptionIds: coerced.correctOptionIds,
-        modelAnswer: coerced.type === "short_answer" ? coerced.modelAnswer : "",
+        modelAnswer: "",
         explanation: coerced.explanation || "",
         sourceQuote: coerced.sourceQuote || "",
         instructorState: coerced.instructorState || "untouched"
     };
 }
 
-function filterUngroundedQuestions(questions, normalizedSource) {
-    return questions.filter((q) => {
-        if (!q.sourceQuote) return true;
-        if (countWords(q.sourceQuote) > SOURCE_QUOTE_MAX_WORDS) return false;
-        if (!quoteIsGrounded(normalizedSource, q.sourceQuote)) return false;
-        return true;
-    });
+function isSourceQuoteValid(normalizedSource, sourceQuote) {
+    if (!sourceQuote) return true;
+    if (countWords(sourceQuote) > SOURCE_QUOTE_MAX_WORDS) return false;
+    if (!quoteIsGrounded(normalizedSource, sourceQuote)) return false;
+    return true;
 }
 
-function normalizeGenerationParams(params = {}) {
+/** Strip invalid sourceQuote values instead of discarding otherwise-valid questions. */
+function filterUngroundedQuestions(questions, normalizedSource) {
+    let strippedCount = 0;
+    const sanitized = questions.map((q) => {
+        if (!q.sourceQuote || isSourceQuoteValid(normalizedSource, q.sourceQuote)) {
+            return q;
+        }
+        strippedCount += 1;
+        return { ...q, sourceQuote: "" };
+    });
+    if (strippedCount > 0) {
+        console.log(`${LOG_PREFIX} stripped invalid sourceQuote from questions`, {
+            strippedCount,
+            keptCount: sanitized.length
+        });
+    }
+    return sanitized;
+}
+
+export function normalizeGenerationParams(params = {}) {
+    const totalQuestions = Number(params.totalQuestions ?? params.total_questions);
+    let mcqCount = Number(params.mcqCount ?? params.mcq_count);
+    let trueFalseCount = Number(params.trueFalseCount ?? params.tf_count);
+
+    if (!Number.isFinite(mcqCount) && !Number.isFinite(trueFalseCount) && Number.isFinite(totalQuestions)) {
+        mcqCount = Math.ceil(totalQuestions / 2);
+        trueFalseCount = totalQuestions - mcqCount;
+    }
+
     return {
-        totalQuestions: Number(params.totalQuestions ?? params.total_questions),
-        mcqCount: Number(params.mcqCount ?? params.mcq_count),
-        trueFalseCount: Number(params.trueFalseCount ?? params.tf_count),
-        shortAnswerCount: Number(params.shortAnswerCount ?? params.short_count),
-        easyCount: Number(params.easyCount ?? params.easy_count),
-        mediumCount: Number(params.mediumCount ?? params.medium_count),
-        hardCount: Number(params.hardCount ?? params.hard_count)
+        totalQuestions,
+        mcqCount: Number.isFinite(mcqCount) ? mcqCount : 0,
+        trueFalseCount: Number.isFinite(trueFalseCount) ? trueFalseCount : 0,
+        easyCount: Number(params.easyCount ?? params.easy_count ?? 0),
+        mediumCount: Number(params.mediumCount ?? params.medium_count ?? 0),
+        hardCount: Number(params.hardCount ?? params.hard_count ?? 0)
     };
 }
 
@@ -349,9 +393,6 @@ function parseJsonResponse(rawText) {
 
 function isStructurallyValidQuestion(q) {
     if (!q?.text?.trim()) return false;
-    if (q.type === "short_answer") {
-        return Boolean(q.modelAnswer?.trim());
-    }
     if (q.type === "true_false") {
         return q.correctOptionIds?.length === 1 && ["t", "f"].includes(q.correctOptionIds[0]);
     }
@@ -366,11 +407,23 @@ function isStructurallyValidQuestion(q) {
     return false;
 }
 
-function parseAndValidateQuestions(rawJson) {
+function parseAndValidateQuestions(rawJson, logContext = {}) {
     const questionsArray = Array.isArray(rawJson?.questions) ? rawJson.questions : [];
+    const rawTypes = questionsArray.map((q) => readRawType(q)).filter(Boolean);
+    const forbiddenDiscarded = questionsArray.filter((q) => isForbiddenRawQuestion(q)).length;
+
     const coerced = questionsArray
         .map(coerceRawQuestion)
         .filter(Boolean);
+
+    console.log(`${LOG_PREFIX} parseAndValidateQuestions`, {
+        ...logContext,
+        rawQuestionCount: questionsArray.length,
+        rawTypes,
+        forbiddenDiscarded,
+        coercedCount: coerced.length,
+        coercedTypes: coerced.map((q) => q.type)
+    });
 
     const parsed = quizGenerationResponseSchema.safeParse({ questions: coerced });
     if (!parsed.success) {
@@ -380,19 +433,96 @@ function parseAndValidateQuestions(rawJson) {
         throw err;
     }
 
-    const normalized = parsed.data.questions
+    const valid = parsed.data.questions
         .map(normalizeDraftQuestion)
         .filter(isStructurallyValidQuestion);
 
-    if (normalized.length === 0) {
-        const err = new Error(
-            "Gemini returned no usable questions after validation. Check the document content and try again."
-        );
-        err.code = "AI_GENERATION_FAILED";
-        throw err;
+    console.log(`${LOG_PREFIX} parseAndValidateQuestions result`, {
+        ...logContext,
+        structurallyValidCount: valid.length,
+        structurallyValidTypes: valid.map((q) => q.type)
+    });
+
+    return valid;
+}
+
+function questionTextKey(q) {
+    return q.text.trim().toLowerCase();
+}
+
+function dedupeQuestionsByText(questions) {
+    const seen = new Set();
+    return questions.filter((q) => {
+        const key = questionTextKey(q);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+    });
+}
+
+function countByType(questions) {
+    return {
+        single: questions.filter((q) => q.type === "single").length,
+        true_false: questions.filter((q) => q.type === "true_false").length
+    };
+}
+
+function selectQuestionsForMix(pool, params) {
+    const { totalQuestions, mcqCount, trueFalseCount } = params;
+    const deduped = dedupeQuestionsByText(pool.filter((q) => QUIZ_QUESTION_TYPES.includes(q.type)));
+    const mcqs = deduped.filter((q) => q.type === "single");
+    const tfs = deduped.filter((q) => q.type === "true_false");
+
+    const selected = [
+        ...mcqs.slice(0, mcqCount),
+        ...tfs.slice(0, trueFalseCount)
+    ];
+
+    const selectedKeys = new Set(selected.map(questionTextKey));
+    if (selected.length < totalQuestions) {
+        for (const q of deduped) {
+            if (selected.length >= totalQuestions) break;
+            const key = questionTextKey(q);
+            if (selectedKeys.has(key)) continue;
+            selected.push(q);
+            selectedKeys.add(key);
+        }
     }
 
-    return normalized;
+    return selected.slice(0, totalQuestions);
+}
+
+function buildTopUpParams(params, selected) {
+    const selectedCounts = countByType(selected);
+    const mcqNeeded = Math.max(0, params.mcqCount - selectedCounts.single);
+    const tfNeeded = Math.max(0, params.trueFalseCount - selectedCounts.true_false);
+    const totalNeeded = Math.max(params.totalQuestions - selected.length, mcqNeeded + tfNeeded);
+
+    if (totalNeeded <= 0) return null;
+
+    const ratio = params.totalQuestions > 0 ? totalNeeded / params.totalQuestions : 1;
+    return {
+        totalQuestions: totalNeeded,
+        mcqCount: mcqNeeded > 0 ? mcqNeeded : Math.max(0, totalNeeded - tfNeeded),
+        trueFalseCount: tfNeeded > 0 ? tfNeeded : Math.max(0, totalNeeded - mcqNeeded),
+        easyCount: Math.max(0, Math.round((params.easyCount ?? 0) * ratio)),
+        mediumCount: Math.max(0, Math.round((params.mediumCount ?? 0) * ratio)),
+        hardCount: Math.max(0, Math.round((params.hardCount ?? 0) * ratio))
+    };
+}
+
+function balanceDifficultyCounts(topUpParams) {
+    const sum =
+        (topUpParams.easyCount ?? 0) +
+        (topUpParams.mediumCount ?? 0) +
+        (topUpParams.hardCount ?? 0);
+    if (sum === topUpParams.totalQuestions) return topUpParams;
+
+    const balanced = { ...topUpParams };
+    balanced.easyCount = topUpParams.totalQuestions;
+    balanced.mediumCount = 0;
+    balanced.hardCount = 0;
+    return balanced;
 }
 
 function getErrorStatus(error) {
@@ -411,9 +541,63 @@ function isQuotaExceededError(error) {
     return status === 429 || message.includes("quota") || message.includes("resource_exhausted");
 }
 
-function shouldTryNextModel(error) {
-    return isModelNotFoundError(error) || isQuotaExceededError(error);
+/** Free-tier projects get limit: 0 for some models (e.g. gemini-2.5-pro) — retrying is pointless. */
+function isFreeTierQuotaBlockedError(error) {
+    return isQuotaExceededError(error) && String(error?.message || "").includes("limit: 0");
 }
+
+function isTransientUnavailableError(error) {
+    const message = String(error?.message || "").toLowerCase();
+    const status = getErrorStatus(error);
+    return (
+        status === 503 ||
+        message.includes("unavailable") ||
+        message.includes("high demand")
+    );
+}
+
+function shouldTryNextModel(error) {
+    return (
+        isModelNotFoundError(error) ||
+        isQuotaExceededError(error) ||
+        isTransientUnavailableError(error)
+    );
+}
+
+function parseRetryDelayMs(error) {
+    try {
+        const raw = String(error?.message || "");
+        if (raw.startsWith("{")) {
+            const parsed = JSON.parse(raw);
+            const retryInfo = parsed?.error?.details?.find((d) =>
+                String(d?.["@type"] || "").includes("RetryInfo")
+            );
+            if (retryInfo?.retryDelay) {
+                const seconds = parseFloat(String(retryInfo.retryDelay).replace(/s$/i, ""));
+                if (Number.isFinite(seconds) && seconds > 0) {
+                    return Math.ceil(seconds * 1000) + 500;
+                }
+            }
+        }
+        const match = raw.match(/retry in ([\d.]+)s/i);
+        if (match) {
+            const seconds = parseFloat(match[1]);
+            if (Number.isFinite(seconds) && seconds > 0) {
+                return Math.ceil(seconds * 1000) + 500;
+            }
+        }
+    } catch {
+        // ignore parse errors
+    }
+    return null;
+}
+
+function sleep(ms) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const MAX_QUOTA_RETRIES_PER_MODEL = 2;
+const MAX_TRANSIENT_RETRIES_PER_MODEL = 2;
 
 async function callGeminiWithModel(client, model, contents) {
     return client.models.generateContent({
@@ -421,14 +605,263 @@ async function callGeminiWithModel(client, model, contents) {
         contents,
         config: {
             responseMimeType: "application/json",
-            responseJsonSchema: GEMINI_RESPONSE_JSON_SCHEMA,
+            responseJsonSchema: buildResponseJsonSchema(),
             temperature: 0.2
         }
     });
 }
 
+async function invokeGemini(client, modelCandidates, contents) {
+    let response;
+    let usedModel = modelCandidates[0];
+    let lastError;
+
+    for (const candidate of modelCandidates) {
+        let quotaRetries = 0;
+        let transientRetries = 0;
+        while (quotaRetries <= MAX_QUOTA_RETRIES_PER_MODEL) {
+            try {
+                response = await callGeminiWithModel(client, candidate, contents);
+                usedModel = candidate;
+                lastError = null;
+                break;
+            } catch (cause) {
+                lastError = cause;
+                console.error(`${LOG_PREFIX} Gemini call failed`, {
+                    model: candidate,
+                    code: cause?.code,
+                    status: cause?.status,
+                    message: cause?.message,
+                    quotaRetry: quotaRetries,
+                    transientRetry: transientRetries
+                });
+
+                if (isFreeTierQuotaBlockedError(cause)) {
+                    console.warn(`${LOG_PREFIX} Model not available on free tier — skipping`, {
+                        model: candidate
+                    });
+                    break;
+                }
+
+                if (
+                    isTransientUnavailableError(cause) &&
+                    transientRetries < MAX_TRANSIENT_RETRIES_PER_MODEL
+                ) {
+                    const delayMs = 5_000 * (transientRetries + 1);
+                    console.log(`${LOG_PREFIX} Gemini temporarily unavailable — retrying after ${delayMs}ms`, {
+                        model: candidate,
+                        attempt: transientRetries + 1
+                    });
+                    await sleep(delayMs);
+                    transientRetries += 1;
+                    continue;
+                }
+
+                if (isQuotaExceededError(cause) && quotaRetries < MAX_QUOTA_RETRIES_PER_MODEL) {
+                    const delayMs = parseRetryDelayMs(cause) ?? 30_000;
+                    console.log(`${LOG_PREFIX} Gemini quota/rate limit — retrying after ${delayMs}ms`, {
+                        model: candidate,
+                        attempt: quotaRetries + 1
+                    });
+                    await sleep(delayMs);
+                    quotaRetries += 1;
+                    continue;
+                }
+
+                if (!shouldTryNextModel(cause)) break;
+                break;
+            }
+        }
+        if (response) break;
+    }
+
+    if (!response) {
+        const code = isQuotaExceededError(lastError)
+            ? "GEMINI_QUOTA_EXCEEDED"
+            : isModelNotFoundError(lastError)
+              ? "AI_MODEL_NOT_FOUND"
+              : isTransientUnavailableError(lastError)
+                ? "GEMINI_UNAVAILABLE"
+                : "AI_GENERATION_FAILED";
+        const err = new Error(
+            code === "GEMINI_QUOTA_EXCEEDED"
+                ? "Gemini API quota exceeded for all attempted models. Check billing or retry later."
+                : code === "AI_MODEL_NOT_FOUND"
+                  ? "AI quiz generation failed: no supported Gemini model available. Set GEMINI_QUIZ_MODEL to gemini-2.5-flash."
+                  : code === "GEMINI_UNAVAILABLE"
+                    ? "Gemini is temporarily overloaded. Please try again in a few minutes."
+                    : `AI quiz generation failed: ${lastError?.message || "unknown error"}`
+        );
+        err.code = code;
+        err.cause = lastError;
+        throw err;
+    }
+
+    return { response, usedModel };
+}
+
+async function generateQuestionBatch(client, modelCandidates, extractedText, batchParams, existingStems) {
+    console.log(`${LOG_PREFIX} generateQuestionBatch request`, {
+        requestedCount: batchParams.totalQuestions,
+        mcqCount: batchParams.mcqCount,
+        trueFalseCount: batchParams.trueFalseCount,
+        allowedTypes: QUIZ_QUESTION_TYPES
+    });
+
+    const messages = buildQuizGenerationMessages(extractedText, batchParams, existingStems);
+    const contents = buildGeminiContents(messages);
+    const { response, usedModel } = await invokeGemini(
+        client,
+        modelCandidates,
+        contents
+    );
+
+    let rawJson;
+    const rawText = readGeminiText(response);
+    try {
+        rawJson = parseJsonResponse(rawText);
+    } catch (cause) {
+        console.error(`${LOG_PREFIX} Failed to parse Gemini JSON`, {
+            model: usedModel,
+            preview: String(rawText).slice(0, 500),
+            message: cause?.message
+        });
+        const err = new Error(cause?.message || "Gemini returned invalid JSON.");
+        err.code = "AI_GENERATION_FAILED";
+        err.cause = cause;
+        throw err;
+    }
+
+    console.log(`${LOG_PREFIX} Gemini raw response`, {
+        model: usedModel,
+        requestedCount: batchParams.totalQuestions,
+        rawQuestionCount: Array.isArray(rawJson?.questions) ? rawJson.questions.length : 0,
+        rawTypes: Array.isArray(rawJson?.questions)
+            ? rawJson.questions.map((q) => readRawType(q)).filter(Boolean)
+            : []
+    });
+
+    let normalized;
+    try {
+        normalized = parseAndValidateQuestions(rawJson, { model: usedModel, phase: "batch" });
+    } catch (cause) {
+        console.error(`${LOG_PREFIX} Schema validation failed`, {
+            model: usedModel,
+            questionCount: Array.isArray(rawJson?.questions) ? rawJson.questions.length : 0,
+            issues: cause?.cause?.issues ?? cause?.message
+        });
+        throw cause;
+    }
+
+    return {
+        questions: normalized,
+        usedModel,
+        tokensInput: response?.usageMetadata?.promptTokenCount ?? null,
+        tokensOutput: response?.usageMetadata?.candidatesTokenCount ?? null
+    };
+}
+
+async function enforceExactQuestionCount(client, modelCandidates, extractedText, params, initialPool) {
+    const target = params.totalQuestions;
+    let pool = dedupeQuestionsByText(initialPool.filter((q) => QUIZ_QUESTION_TYPES.includes(q?.type)));
+    let usedModel = null;
+    let tokensInput = null;
+    let tokensOutput = null;
+
+    console.log(`${LOG_PREFIX} enforceExactQuestionCount start`, {
+        target,
+        mcqCount: params.mcqCount,
+        trueFalseCount: params.trueFalseCount,
+        initialPoolCount: initialPool.length,
+        usablePoolCount: pool.length,
+        initialTypes: pool.map((q) => q.type)
+    });
+
+    for (let attempt = 0; attempt <= MAX_TOP_UP_ATTEMPTS; attempt++) {
+        const selected = selectQuestionsForMix(pool, params);
+
+        console.log(`${LOG_PREFIX} enforceExactQuestionCount attempt`, {
+            attempt,
+            target,
+            selectedCount: selected.length,
+            selectedTypes: selected.map((q) => q.type),
+            poolCount: pool.length
+        });
+
+        if (selected.length === target) {
+            console.log(`${LOG_PREFIX} enforceExactQuestionCount success`, {
+                target,
+                finalCount: selected.length,
+                finalTypes: selected.map((q) => q.type)
+            });
+            return { questions: selected, usedModel, tokensInput, tokensOutput };
+        }
+
+        const topUpParams = balanceDifficultyCounts(buildTopUpParams(params, selected));
+        if (!topUpParams) {
+            console.warn(`${LOG_PREFIX} enforceExactQuestionCount cannot build top-up params`, {
+                attempt,
+                target,
+                selectedCount: selected.length
+            });
+            break;
+        }
+
+        console.log(`${LOG_PREFIX} enforceExactQuestionCount top-up`, {
+            attempt,
+            deficit: target - selected.length,
+            topUpParams
+        });
+
+        const existingStems = pool.map((q) => q.text);
+        const batch = await generateQuestionBatch(
+            client,
+            modelCandidates,
+            extractedText,
+            topUpParams,
+            existingStems
+        );
+
+        usedModel = batch.usedModel;
+        if (batch.tokensInput != null) tokensInput = (tokensInput ?? 0) + batch.tokensInput;
+        if (batch.tokensOutput != null) tokensOutput = (tokensOutput ?? 0) + batch.tokensOutput;
+
+        const additions = filterUngroundedQuestions(batch.questions, extractedText);
+        pool = dedupeQuestionsByText([
+            ...pool,
+            ...additions.filter((q) => QUIZ_QUESTION_TYPES.includes(q?.type))
+        ]);
+    }
+
+    const finalSelected = selectQuestionsForMix(pool, params);
+    console.error(`${LOG_PREFIX} enforceExactQuestionCount failed`, {
+        target,
+        finalSelectedCount: finalSelected.length,
+        finalTypes: finalSelected.map((q) => q.type),
+        poolCount: pool.length
+    });
+
+    if (finalSelected.length !== target) {
+        const err = new Error(
+            `Gemini returned ${finalSelected.length} usable questions but ${target} were requested. Try again or adjust the document.`
+        );
+        err.code = "AI_GENERATION_FAILED";
+        throw err;
+    }
+
+    return { questions: finalSelected, usedModel, tokensInput, tokensOutput };
+}
+
 export async function generateQuizDraft(extractedText, params, options = {}) {
     const model = resolveQuizModel(options.model);
+    const normalizedParams = normalizeGenerationParams(params);
+
+    console.log(`${LOG_PREFIX} generateQuizDraft start`, {
+        requestedCount: normalizedParams.totalQuestions,
+        mcqCount: normalizedParams.mcqCount,
+        trueFalseCount: normalizedParams.trueFalseCount,
+        allowedTypes: QUIZ_QUESTION_TYPES
+    });
 
     if (!extractedText || !extractedText.trim()) {
         return {
@@ -440,103 +873,84 @@ export async function generateQuizDraft(extractedText, params, options = {}) {
         };
     }
 
-    const client = createGeminiClient();
-    const messages =
-        Array.isArray(options.messages) && options.messages.length > 0
-            ? options.messages
-            : buildQuizGenerationMessages(extractedText, params);
-    const contents = buildGeminiContents(messages);
+    if (!Number.isFinite(normalizedParams.totalQuestions) || normalizedParams.totalQuestions < 1) {
+        const err = new Error("Invalid totalQuestions in generation params.");
+        err.code = "AI_GENERATION_FAILED";
+        throw err;
+    }
 
+    const client = createGeminiClient();
     const modelCandidates = buildModelCandidates(model);
 
-    let response;
     let usedModel = model;
-    let lastError;
+    let tokensInput = null;
+    let tokensOutput = null;
+    let initialPool;
 
-    for (const candidate of modelCandidates) {
-        try {
-            response = await callGeminiWithModel(client, candidate, contents);
-            usedModel = candidate;
-            lastError = null;
-            break;
-        } catch (cause) {
-            lastError = cause;
-            console.error(`${LOG_PREFIX} Gemini call failed`, {
-                model: candidate,
-                code: cause?.code,
-                status: cause?.status,
-                message: cause?.message
-            });
-            if (!shouldTryNextModel(cause)) break;
-        }
-    }
-
-    if (!response) {
-        const code = isQuotaExceededError(lastError)
-            ? "GEMINI_QUOTA_EXCEEDED"
-            : isModelNotFoundError(lastError)
-              ? "AI_MODEL_NOT_FOUND"
-              : "AI_GENERATION_FAILED";
-        const err = new Error(
-            code === "GEMINI_QUOTA_EXCEEDED"
-                ? "Gemini API quota exceeded for all attempted models. Check billing or retry later."
-                : code === "AI_MODEL_NOT_FOUND"
-                  ? `AI quiz generation failed: no supported Gemini model available. Set GEMINI_QUIZ_MODEL to gemini-2.5-flash or gemini-2.0-flash.`
-                  : `AI quiz generation failed: ${lastError?.message || "unknown error"}`
+    if (Array.isArray(options.messages) && options.messages.length > 0) {
+        const contents = buildGeminiContents(options.messages);
+        const { response, usedModel: m } = await invokeGemini(
+            client,
+            modelCandidates,
+            contents
         );
-        err.code = code;
-        err.cause = lastError;
-        throw err;
-    }
-
-    let rawJson;
-    try {
+        usedModel = m;
         const rawText = readGeminiText(response);
-        rawJson = parseJsonResponse(rawText);
-    } catch (cause) {
-        console.error(`${LOG_PREFIX} Failed to parse Gemini JSON`, {
-            model: usedModel,
-            preview: String(readGeminiText(response)).slice(0, 500),
-            message: cause?.message
+        const rawJson = parseJsonResponse(rawText);
+        console.log(`${LOG_PREFIX} generateQuizDraft custom messages response`, {
+            requestedCount: normalizedParams.totalQuestions,
+            rawQuestionCount: Array.isArray(rawJson?.questions) ? rawJson.questions.length : 0,
+            rawTypes: Array.isArray(rawJson?.questions)
+                ? rawJson.questions.map((q) => readRawType(q)).filter(Boolean)
+                : []
         });
-        const err = new Error(cause?.message || "Gemini returned invalid JSON.");
+        initialPool = parseAndValidateQuestions(rawJson, { model: usedModel, phase: "custom-messages" });
+        tokensInput = response?.usageMetadata?.promptTokenCount ?? null;
+        tokensOutput = response?.usageMetadata?.candidatesTokenCount ?? null;
+    } else {
+        const batch = await generateQuestionBatch(
+            client,
+            modelCandidates,
+            extractedText,
+            normalizedParams,
+            []
+        );
+        usedModel = batch.usedModel;
+        tokensInput = batch.tokensInput;
+        tokensOutput = batch.tokensOutput;
+        initialPool = batch.questions;
+    }
+
+    const poolForSelection = filterUngroundedQuestions(initialPool, extractedText);
+
+    const result = await enforceExactQuestionCount(
+        client,
+        modelCandidates,
+        extractedText,
+        normalizedParams,
+        poolForSelection
+    );
+
+    const finalQuestions = result.questions.filter((q) => QUIZ_QUESTION_TYPES.includes(q.type));
+    if (finalQuestions.length !== normalizedParams.totalQuestions) {
+        const err = new Error(
+            `Internal count mismatch: expected ${normalizedParams.totalQuestions}, got ${finalQuestions.length}.`
+        );
         err.code = "AI_GENERATION_FAILED";
-        err.cause = cause;
         throw err;
     }
 
-    let normalized;
-    try {
-        normalized = parseAndValidateQuestions(rawJson);
-    } catch (cause) {
-        console.error(`${LOG_PREFIX} Schema validation failed`, {
-            model: usedModel,
-            questionCount: Array.isArray(rawJson?.questions) ? rawJson.questions.length : 0,
-            issues: cause?.cause?.issues ?? cause?.message
-        });
-        throw cause;
-    }
-
-    const grounded = filterUngroundedQuestions(normalized, extractedText);
-
-    if (grounded.length === 0 && normalized.length > 0) {
-        console.warn(
-            `${LOG_PREFIX} All ${normalized.length} questions were filtered as ungrounded; returning unfiltered set as fallback.`
-        );
-        return {
-            questions: normalized,
-            tokensInput: response?.usageMetadata?.promptTokenCount ?? null,
-            tokensOutput: response?.usageMetadata?.candidatesTokenCount ?? null,
-            model: usedModel,
-            provider: "google-gemini"
-        };
-    }
+    console.log(`${LOG_PREFIX} generateQuizDraft complete`, {
+        requestedCount: normalizedParams.totalQuestions,
+        returnedCount: finalQuestions.length,
+        returnedTypes: finalQuestions.map((q) => q.type)
+    });
 
     return {
-        questions: grounded,
-        tokensInput: response?.usageMetadata?.promptTokenCount ?? null,
-        tokensOutput: response?.usageMetadata?.candidatesTokenCount ?? null,
-        model: usedModel,
+        questions: finalQuestions,
+        tokensInput: result.tokensInput ?? tokensInput,
+        tokensOutput: result.tokensOutput ?? tokensOutput,
+        model: result.usedModel ?? usedModel,
         provider: "google-gemini"
     };
 }
@@ -545,5 +959,9 @@ export {
     quizGenerationResponseSchema,
     filterUngroundedQuestions,
     countWords,
-    quoteIsGrounded
+    quoteIsGrounded,
+    selectQuestionsForMix,
+    enforceExactQuestionCount as _enforceExactQuestionCountForTests,
+    parseAndValidateQuestions,
+    FORBIDDEN_QUESTION_TYPES
 };

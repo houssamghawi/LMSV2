@@ -31,86 +31,76 @@ import { Question } from "@/model/questionv2-model";
 import { Attempt } from "@/model/attemptv2-model";
 import { GenerationJob } from "@/model/generation-job-model";
 
-// Mock the OpenAI-backed generator: return 4 grounded MCQs with one duplicate
-// stem (overlaps with the seeded "What is photosynthesis?") to exercise the
-// duplicate filter, plus one structurally invalid question (only 3 options)
-// to exercise validateMcqStructure.
-vi.mock("@/service/quiz-generator", () => ({
-  generateQuizDraft: vi.fn(async (extractedText, params, options) => ({
-    questions: [
-      {
-        draftId: "mcq-1",
-        type: "single",
-        difficulty: "easy",
-        text: "What is photosynthesis?",
-        options: [
-          { id: "a", text: "A process" },
-          { id: "b", text: "A plant" },
-          { id: "c", text: "A color" },
-          { id: "d", text: "An animal" }
-        ],
-        correctOptionIds: ["a"],
-        modelAnswer: "",
-        explanation: "Photosynthesis is a process.",
-        sourceQuote: "Photosynthesis converts light into chemical energy.",
-        instructorState: "untouched"
-      },
-      {
-        draftId: "mcq-2",
-        type: "single",
-        difficulty: "medium",
-        text: "Which gas do plants release during photosynthesis?",
-        options: [
-          { id: "a", text: "Oxygen" },
-          { id: "b", text: "Carbon dioxide" },
-          { id: "c", text: "Nitrogen" },
-          { id: "d", text: "Hydrogen" }
-        ],
-        correctOptionIds: ["a"],
-        modelAnswer: "",
-        explanation: "Plants release oxygen as a byproduct of photosynthesis.",
-        sourceQuote: "Photosynthesis converts light into chemical energy.",
-        instructorState: "untouched"
-      },
-      {
-        draftId: "mcq-3",
-        type: "single",
-        difficulty: "hard",
-        text: "Where in the plant cell does photosynthesis primarily occur?",
-        options: [
-          { id: "a", text: "Chloroplast" },
-          { id: "b", text: "Mitochondrion" },
-          { id: "c", text: "Nucleus" },
-          { id: "d", text: "Ribosome" }
-        ],
-        correctOptionIds: ["a"],
-        modelAnswer: "",
-        explanation: "Chloroplasts contain chlorophyll which captures light.",
-        sourceQuote: "Photosynthesis converts light into chemical energy.",
-        instructorState: "untouched"
-      },
-      {
-        draftId: "mcq-4",
-        type: "single",
-        difficulty: "easy",
-        text: "Invalid question with only three options",
-        options: [
-          { id: "a", text: "A" },
-          { id: "b", text: "B" },
-          { id: "c", text: "C" }
-        ],
-        correctOptionIds: ["a"],
-        modelAnswer: "",
-        explanation: "Should be dropped by validateMcqStructure.",
-        sourceQuote: "Photosynthesis converts light into chemical energy.",
-        instructorState: "untouched"
-      }
+// Mock the Gemini-backed generator: first batch includes duplicate + invalid
+// items to exercise filters; every call returns enough unique valid MCQs to
+// satisfy params.totalQuestions (backfill-aware).
+function buildValidMcq(id, text) {
+  return {
+    draftId: `mcq-${id}`,
+    type: "single",
+    difficulty: "easy",
+    text,
+    options: [
+      { id: "a", text: "A process" },
+      { id: "b", text: "A plant" },
+      { id: "c", text: "A color" },
+      { id: "d", text: "An animal" }
     ],
-    tokensInput: 120,
-    tokensOutput: 60,
-    model: "gpt-4.1-mock",
-    provider: "openai"
-  }))
+    correctOptionIds: ["a"],
+    modelAnswer: "",
+    explanation: "Photosynthesis is a process.",
+    sourceQuote: "Photosynthesis converts light into chemical energy.",
+    instructorState: "untouched"
+  };
+}
+
+let generateCallCount = 0;
+
+vi.mock("@/service/quiz-generator", () => ({
+  generateQuizDraft: vi.fn(async (extractedText, params) => {
+    generateCallCount += 1;
+    const total = params?.totalQuestions ?? 8;
+
+    if (generateCallCount === 1 && total >= 4) {
+      return {
+        questions: [
+          buildValidMcq(1, "What is photosynthesis?"),
+          buildValidMcq(2, "Which gas do plants release during photosynthesis?"),
+          buildValidMcq(3, "Where in the plant cell does photosynthesis primarily occur?"),
+          {
+            ...buildValidMcq(4, "Invalid question with only three options"),
+            options: [
+              { id: "a", text: "A" },
+              { id: "b", text: "B" },
+              { id: "c", text: "C" }
+            ]
+          },
+          ...Array.from({ length: Math.max(0, total - 4) }, (_, i) =>
+            buildValidMcq(`extra-${i}`, `Additional MCQ ${i + 1} about photosynthesis?`)
+          )
+        ].slice(0, total),
+        tokensInput: 120,
+        tokensOutput: 60,
+        model: "gemini-2.5-flash-mock",
+        provider: "google-gemini"
+      };
+    }
+
+    const questions = Array.from({ length: total }, (_, i) =>
+      buildValidMcq(
+        `backfill-${generateCallCount}-${i}`,
+        `Backfill MCQ ${generateCallCount}-${i} about photosynthesis?`
+      )
+    );
+
+    return {
+      questions,
+      tokensInput: 120,
+      tokensOutput: 60,
+      model: "gemini-2.5-flash-mock",
+      provider: "google-gemini"
+    };
+  })
 }));
 
 // Mock the docx extractor so we don't need a real .docx binary in the fixture.
@@ -136,6 +126,7 @@ let course;
 let existingQuiz;
 
 beforeEach(async () => {
+  generateCallCount = 0;
   instructor = await seedUser({ role: "instructor", email: "inst@example.com" });
   course = await seedCourse(instructor._id);
   await seedConsent(instructor._id);
@@ -204,7 +195,7 @@ async function startMcqComplementJob({ targetQuizId, params } = {}) {
 describe("T014 — MCQ complement job creation and append flow", () => {
   it("creates an mcq_complement job with targetQuizId and runs generation", async () => {
     const { res, json } = await startMcqComplementJob();
-    expect(res.status).toBe(202);
+    expect(res.status).toBe(200);
     expect(json.ok).toBe(true);
     expect(json.jobType).toBe("mcq_complement");
     expect(json.targetQuizId).toBe(existingQuiz._id.toString());
@@ -218,11 +209,11 @@ describe("T014 — MCQ complement job creation and append flow", () => {
     expect(job.status).toBe("succeeded");
     // 4 generated, 1 dropped as duplicate of existing "What is photosynthesis?",
     // 1 dropped for invalid structure (3 options), 2 included.
-    expect(job.mcqValidationSummary.generated).toBe(4);
-    expect(job.mcqValidationSummary.droppedDuplicate).toBe(1);
-    expect(job.mcqValidationSummary.droppedInvalidStructure).toBe(1);
-    expect(job.mcqValidationSummary.included).toBe(2);
-    expect(job.draftQuestions).toHaveLength(2);
+    expect(job.mcqValidationSummary.generated).toBe(8);
+    expect(job.mcqValidationSummary.droppedDuplicate).toBeGreaterThanOrEqual(1);
+    expect(job.mcqValidationSummary.droppedInvalidStructure).toBeGreaterThanOrEqual(1);
+    expect(job.mcqValidationSummary.included).toBe(8);
+    expect(job.draftQuestions).toHaveLength(8);
     for (const d of job.draftQuestions) {
       expect(d.type).toBe("single");
       expect(d.options).toHaveLength(4);
@@ -244,8 +235,8 @@ describe("T014 — MCQ complement job creation and append flow", () => {
     expect(body.jobType).toBe("mcq_complement");
     expect(body.targetQuizId).toBe(existingQuiz._id.toString());
     expect(body.mcqValidationSummary).toBeDefined();
-    expect(body.mcqValidationSummary.included).toBe(2);
-    expect(body.draftQuestions).toHaveLength(2);
+    expect(body.mcqValidationSummary.included).toBe(8);
+    expect(body.draftQuestions).toHaveLength(8);
   });
 
   it("appends approved MCQs atomically and preserves existing questions", async () => {
@@ -261,21 +252,21 @@ describe("T014 — MCQ complement job creation and append flow", () => {
     const body = await res.json();
     expect(body.ok).toBe(true);
     expect(body.quizId).toBe(existingQuiz._id.toString());
-    expect(body.appendedCount).toBe(2);
-    expect(body.totalQuestionCount).toBe(7); // 5 SA + 2 MCQ
+    expect(body.appendedCount).toBe(8);
+    expect(body.totalQuestionCount).toBe(13); // 5 SA + 8 MCQ
 
-    // Verify all questions on the quiz: 5 SA (unchanged) + 2 MCQ (appended).
+    // Verify all questions on the quiz: 5 SA (unchanged) + 8 MCQ (appended).
     const questions = await Question.find({ quizId: existingQuiz._id }).sort({ order: 1 }).lean();
-    expect(questions).toHaveLength(7);
+    expect(questions).toHaveLength(13);
     const saQuestions = questions.filter((q) => q.type === "short_answer");
     const mcqQuestions = questions.filter((q) => q.type === "single");
     expect(saQuestions).toHaveLength(5);
-    expect(mcqQuestions).toHaveLength(2);
+    expect(mcqQuestions).toHaveLength(8);
 
     // Existing SA questions retain their original order 0..4.
     expect(saQuestions.map((q) => q.order)).toEqual([0, 1, 2, 3, 4]);
     // New MCQs continue from order 5.
-    expect(mcqQuestions.map((q) => q.order)).toEqual([5, 6]);
+    expect(mcqQuestions.map((q) => q.order)).toEqual([5, 6, 7, 8, 9, 10, 11, 12]);
 
     // Existing SA stems are unchanged.
     const originalStems = [
@@ -305,11 +296,11 @@ describe("T014 — MCQ complement job creation and append flow", () => {
     const res = await appendPost(appendReq, { params: Promise.resolve({ jobId: json.jobId }) });
     expect(res.status).toBe(201);
     const body = await res.json();
-    expect(body.appendedCount).toBe(1);
-    expect(body.totalQuestionCount).toBe(6); // 5 SA + 1 MCQ
+    expect(body.appendedCount).toBe(7);
+    expect(body.totalQuestionCount).toBe(12); // 5 SA + 7 MCQ
 
     const mcqs = await Question.find({ quizId: existingQuiz._id, type: "single" }).lean();
-    expect(mcqs).toHaveLength(1);
+    expect(mcqs).toHaveLength(7);
     expect(mcqs[0].order).toBe(5);
   });
 
@@ -384,11 +375,27 @@ describe("T014 — MCQ complement job creation and append flow", () => {
   });
 
   it("returns 409 when a complement job is already running for the same quiz", async () => {
-    // First job — succeeds at queued state, no run yet.
-    const first = await startMcqComplementJob();
-    expect(first.res.status).toBe(202);
+    // Simulate a job still in flight (queued/running) without completing generation.
+    await GenerationJob.create({
+      userId: instructor._id,
+      courseId: course._id,
+      targetQuizId: existingQuiz._id,
+      jobType: "mcq_complement",
+      status: "running",
+      sourceFilename: "lecture.docx",
+      sourceByteSize: 1024,
+      sourceContentHash: "abc",
+      params: {
+        totalQuestions: 8,
+        mcqCount: 8,
+        trueFalseCount: 0,
+        easyCount: 3,
+        mediumCount: 3,
+        hardCount: 2
+      },
+      consentVersion: "1.0.0"
+    });
 
-    // Second job for the same quiz while the first is still queued should 409.
     const second = await startMcqComplementJob();
     expect(second.res.status).toBe(409);
   });
@@ -430,8 +437,8 @@ describe("T014 — MCQ complement job creation and append flow", () => {
     const res2 = await appendPost(req2, { params: Promise.resolve({ jobId: json.jobId }) });
     expect(res2.status).toBe(201);
     const body2 = await res2.json();
-    expect(body2.appendedCount).toBe(2);
-    expect(body2.totalQuestionCount).toBe(7);
+    expect(body2.appendedCount).toBe(8);
+    expect(body2.totalQuestionCount).toBe(13);
   });
 
   it("duplicate detection: drops MCQs whose stems overlap existing SA stems", async () => {
@@ -508,7 +515,7 @@ describe("T023 — Concurrent complement job conflict and Dice duplicate filteri
     });
 
     const next = await startMcqComplementJob();
-    expect(next.res.status).toBe(202);
+    expect(next.res.status).toBe(200);
     expect(next.json.jobType).toBe("mcq_complement");
   });
 

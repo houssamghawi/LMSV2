@@ -66,12 +66,15 @@ describe("Phase 2 foundational: models", () => {
                 },
                 {
                     draftId: "u2",
-                    type: "short_answer",
+                    type: "true_false",
                     difficulty: "hard",
-                    text: "Explain X.",
-                    options: [],
-                    correctOptionIds: [],
-                    modelAnswer: "X is the process of A.",
+                    text: "X is a process.",
+                    options: [
+                        { id: "t", text: "True" },
+                        { id: "f", text: "False" }
+                    ],
+                    correctOptionIds: ["t"],
+                    modelAnswer: "",
                     explanation: "Per the lecture.",
                     sourceQuote: "X is the process of A.",
                     instructorState: "untouched"
@@ -81,11 +84,42 @@ describe("Phase 2 foundational: models", () => {
         const fetched = await GenerationJob.findById(job._id).lean();
         expect(fetched.draftQuestions).toHaveLength(2);
         expect(fetched.draftQuestions[0].correctOptionIds).toEqual(["a"]);
-        expect(fetched.draftQuestions[1].modelAnswer).toBeTruthy();
+        expect(fetched.draftQuestions[1].correctOptionIds).toEqual(["t"]);
         expect(fetched.params.totalQuestions).toBe(10);
     });
 
-    it("GenerationJob rejects bad draftQuestion: SA with options", async () => {
+    it("GenerationJob accepts draftQuestions with empty sourceQuote after grounding strip", async () => {
+        const job = await GenerationJob.create({
+            userId,
+            courseId,
+            sourceFilename: "lecture.docx",
+            sourceByteSize: 1024,
+            sourceContentHash: computeContentHash("hello world"),
+            consentVersion: AI_CONSENT_VERSION,
+            params: DEFAULT_GENERATION_PARAMS,
+            draftQuestions: [
+                {
+                    draftId: "u1",
+                    type: "single",
+                    difficulty: "easy",
+                    text: "What is X?",
+                    options: [
+                        { id: "a", text: "A" },
+                        { id: "b", text: "B" }
+                    ],
+                    correctOptionIds: ["a"],
+                    modelAnswer: "",
+                    explanation: "Because A.",
+                    sourceQuote: "",
+                    instructorState: "untouched"
+                }
+            ]
+        });
+        const fetched = await GenerationJob.findById(job._id).lean();
+        expect(fetched.draftQuestions[0].sourceQuote).toBe("");
+    });
+
+    it("GenerationJob rejects bad draftQuestion: MCQ with too few options", async () => {
         await expect(
             GenerationJob.create({
                 userId,
@@ -98,12 +132,12 @@ describe("Phase 2 foundational: models", () => {
                 draftQuestions: [
                     {
                         draftId: "u",
-                        type: "short_answer",
+                        type: "single",
                         difficulty: "easy",
                         text: "Explain.",
                         options: [{ id: "a", text: "A" }],
-                        correctOptionIds: [],
-                        modelAnswer: "answer",
+                        correctOptionIds: ["a"],
+                        modelAnswer: "",
                         explanation: "x",
                         sourceQuote: "q"
                     }
@@ -243,8 +277,7 @@ describe("Phase 2 foundational: validations", () => {
         const ok = quizGenerationParamsSchema.safeParse({
             totalQuestions: 10,
             mcqCount: 5,
-            trueFalseCount: 3,
-            shortAnswerCount: 2,
+            trueFalseCount: 5,
             easyCount: 4,
             mediumCount: 4,
             hardCount: 2
@@ -254,8 +287,7 @@ describe("Phase 2 foundational: validations", () => {
         const bad = quizGenerationParamsSchema.safeParse({
             totalQuestions: 10,
             mcqCount: 5,
-            trueFalseCount: 3,
-            shortAnswerCount: 1, // sums to 9, not 10
+            trueFalseCount: 4,
             easyCount: 4,
             mediumCount: 4,
             hardCount: 2
@@ -287,18 +319,18 @@ describe("Phase 2 foundational: validations", () => {
         expect(gradeShortAnswerSchema.safeParse({ awardedPoints: -1 }).success).toBe(false);
     });
 
-    it("updateDraftQuestionSchema allows partial edit and enforces SA rules", () => {
+    it("updateDraftQuestionSchema allows partial edit for MCQ/TF", () => {
         const ok = updateDraftQuestionSchema.safeParse({
             text: "Updated text",
             instructorState: "edited"
         });
         expect(ok.success).toBe(true);
 
-        const badSa = updateDraftQuestionSchema.safeParse({
-            type: "short_answer",
+        const badOptions = updateDraftQuestionSchema.safeParse({
+            type: "single",
             options: [{ id: "a", text: "A" }]
         });
-        expect(badSa.success).toBe(false);
+        expect(badOptions.success).toBe(false);
     });
 
     it("regenerateDraftSchema requires draftId when scope=single", () => {
@@ -351,7 +383,9 @@ describe("Phase 2 foundational: prompt templates", () => {
         const sys = buildSystemPrompt(DEFAULT_GENERATION_PARAMS);
         expect(sys).toContain(String(DEFAULT_GENERATION_PARAMS.totalQuestions));
         expect(sys).toContain(String(SOURCE_QUOTE_MAX_WORDS));
-        expect(sys).toContain("short_answer");
+        expect(sys).toContain("true_false");
+        expect(sys).toContain("Essay questions are FORBIDDEN");
+        expect(sys).toContain('"single" | "true_false"');
     });
 
     it("buildUserPrompt embeds the lecture text", () => {

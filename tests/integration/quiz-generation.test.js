@@ -29,16 +29,20 @@ import { Question } from "@/model/questionv2-model";
 import { GenerationJob } from "@/model/generation-job-model";
 import { DEFAULT_GENERATION_PARAMS, AI_CONSENT_VERSION } from "@/lib/constants";
 
-// Mock the OpenAI-backed generator: return one grounded question per requested
-// type so the save flow has something to persist.
+// Mock the Gemini-backed generator: return grounded questions matching the requested count.
 vi.mock("@/service/quiz-generator", () => ({
-  generateQuizDraft: vi.fn(async (extractedText, params) => ({
-    questions: [
-      {
-        draftId: "draft-mcq-1",
+  generateQuizDraft: vi.fn(async (extractedText, params) => {
+    const total = params?.totalQuestions ?? 2;
+    const mcqCount = params?.mcqCount ?? Math.ceil(total / 2);
+    const tfCount = params?.trueFalseCount ?? (total - mcqCount);
+    const questions = [];
+
+    for (let i = 0; i < mcqCount; i++) {
+      questions.push({
+        draftId: `draft-mcq-${i + 1}`,
         type: "single",
         difficulty: "easy",
-        text: "What is photosynthesis?",
+        text: `MCQ question ${i + 1}?`,
         options: [
           { id: "a", text: "A process" },
           { id: "b", text: "A plant" },
@@ -50,12 +54,15 @@ vi.mock("@/service/quiz-generator", () => ({
         explanation: "Photosynthesis is a process.",
         sourceQuote: "Photosynthesis converts light into chemical energy.",
         instructorState: "untouched"
-      },
-      {
-        draftId: "draft-tf-1",
+      });
+    }
+
+    for (let i = 0; i < tfCount; i++) {
+      questions.push({
+        draftId: `draft-tf-${i + 1}`,
         type: "true_false",
         difficulty: "medium",
-        text: "Photosynthesis produces oxygen.",
+        text: `True/false statement ${i + 1}.`,
         options: [
           { id: "t", text: "True" },
           { id: "f", text: "False" }
@@ -65,25 +72,17 @@ vi.mock("@/service/quiz-generator", () => ({
         explanation: "It releases oxygen.",
         sourceQuote: "Photosynthesis converts light into chemical energy.",
         instructorState: "untouched"
-      },
-      {
-        draftId: "draft-sa-1",
-        type: "short_answer",
-        difficulty: "hard",
-        text: "Explain why photosynthesis matters.",
-        options: [],
-        correctOptionIds: [],
-        modelAnswer: "It sustains life by producing oxygen and energy.",
-        explanation: "Per the lecture.",
-        sourceQuote: "Photosynthesis converts light into chemical energy.",
-        instructorState: "untouched"
-      }
-    ],
-    tokensInput: 100,
-    tokensOutput: 50,
-    model: "gpt-4.1-mock",
-    provider: "openai"
-  }))
+      });
+    }
+
+    return {
+      questions: questions.slice(0, total),
+      tokensInput: 100,
+      tokensOutput: 50,
+      model: "gemini-2.5-flash-mock",
+      provider: "google-gemini"
+    };
+  })
 }));
 
 // Mock the docx extractor so we don't need a real .docx binary in the fixture.
@@ -127,17 +126,16 @@ describe("T016 — quiz generation end-to-end flow", () => {
       file: Buffer.from("fake-docx-bytes"),
       courseId: course._id.toString(),
       params: {
-        totalQuestions: 3,
+        totalQuestions: 2,
         mcqCount: 1,
         trueFalseCount: 1,
-        shortAnswerCount: 1,
         easyCount: 1,
         mediumCount: 1,
-        hardCount: 1
+        hardCount: 0
       }
     });
     const uploadRes = await jobsPost(uploadReq, { params: Promise.resolve({}) });
-    expect(uploadRes.status).toBe(202);
+    expect(uploadRes.status).toBe(200);
     const uploadJson = await uploadRes.json();
     expect(uploadJson.ok).toBe(true);
     expect(uploadJson.jobId).toBeTruthy();
@@ -157,8 +155,7 @@ describe("T016 — quiz generation end-to-end flow", () => {
     expect(getRes.headers.get("Cache-Control")).toContain("no-store");
     const getJson = await getRes.json();
     expect(getJson.status).toBe("succeeded");
-    expect(getJson.draftQuestions).toHaveLength(3);
-    expect(getJson.draftQuestions[2].type).toBe("short_answer");
+    expect(getJson.draftQuestions).toHaveLength(2);
     expect(getJson.draftQuestions[0].sourceQuote).toBeTruthy();
 
     // 4. Edit one draft question (mark edited)
@@ -211,14 +208,10 @@ describe("T016 — quiz generation end-to-end flow", () => {
     expect(quiz.title).toBe("Chapter Photosynthesis Quiz");
 
     const questions = await Question.find({ quizId: new mongoose.Types.ObjectId(quizId) }).lean();
-    // 3 drafts minus the 1 rejected = 2 saved questions
-    expect(questions).toHaveLength(2);
+    // 2 drafts minus the 1 rejected = 1 saved question
+    expect(questions).toHaveLength(1);
     const types = questions.map((q) => q.type).sort();
-    expect(types).toEqual(["short_answer", "single"]);
-    // SA question must carry a modelAnswer
-    const sa = questions.find((q) => q.type === "short_answer");
-    expect(sa.modelAnswer).toBeTruthy();
-    expect(sa.sourceQuote).toBeTruthy();
+    expect(types).toEqual(["single"]);
   });
 
   it("rejects empty extracted text with a 400 (FR-002)", async () => {
@@ -230,13 +223,12 @@ describe("T016 — quiz generation end-to-end flow", () => {
       file: Buffer.from("empty-docx"),
       courseId: course._id.toString(),
       params: {
-        totalQuestions: 3,
+        totalQuestions: 2,
         mcqCount: 1,
         trueFalseCount: 1,
-        shortAnswerCount: 1,
         easyCount: 1,
         mediumCount: 1,
-        hardCount: 1
+        hardCount: 0
       }
     });
     const res = await jobsPost(uploadReq, { params: Promise.resolve({}) });

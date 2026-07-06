@@ -205,12 +205,13 @@ async function runMcqComplementJob(job, options = {}) {
 
         const result = await generateQuizDraft(extractedText, params, { messages });
 
-        const generated = Array.isArray(result.questions) ? result.questions : [];
-        const droppedUngrounded = Math.max(0, (params.totalQuestions || 0) - generated.length);
+        let generated = Array.isArray(result.questions) ? result.questions : [];
+        const targetCount = params.totalQuestions || 0;
+        let droppedUngrounded = Math.max(0, targetCount - generated.length);
 
         // Structural validation (exactly 4 distinct options, correct answer
         // maps to an option, justification ≤ 2 sentences).
-        const structurallyValid = [];
+        let structurallyValid = [];
         let droppedInvalidStructure = 0;
         for (const q of generated) {
             if (validateMcqStructure(q)) {
@@ -221,8 +222,68 @@ async function runMcqComplementJob(job, options = {}) {
         }
 
         // Duplicate detection against existing stems on the target quiz.
-        const { kept, dropped } = filterDuplicateStems(structurallyValid, existingStems);
-        const droppedDuplicate = dropped.length;
+        let { kept, dropped } = filterDuplicateStems(structurallyValid, existingStems);
+        let droppedDuplicate = dropped.length;
+
+        // Backfill: MCQ complement must still deliver exactly targetCount MCQs
+        // after structural + duplicate filtering. Request additional batches
+        // until the quota is met or generation fails.
+        const MAX_MCQ_BACKFILL_ATTEMPTS = 10;
+        const existingStemSet = new Set(existingStems.map((s) => s.trim().toLowerCase()));
+        const usedTexts = new Set(kept.map((q) => q.text.trim().toLowerCase()));
+
+        for (let attempt = 0;
+            kept.length < targetCount && attempt < MAX_MCQ_BACKFILL_ATTEMPTS;
+            attempt += 1
+        ) {
+            const deficit = targetCount - kept.length;
+            const backfillParams = {
+                ...params,
+                totalQuestions: deficit,
+                mcqCount: deficit,
+                trueFalseCount: 0
+            };
+            const avoidanceStems = [
+                ...existingStems,
+                ...kept.map((q) => q.text),
+                ...dropped.map((q) => q.text)
+            ];
+            const backfillMessages = buildMcqComplementMessages(
+                extractedText,
+                backfillParams,
+                avoidanceStems
+            );
+            const backfill = await generateQuizDraft(extractedText, backfillParams, {
+                messages: backfillMessages
+            });
+            const candidates = Array.isArray(backfill.questions) ? backfill.questions : [];
+            droppedUngrounded += Math.max(0, deficit - candidates.length);
+
+            for (const q of candidates) {
+                if (kept.length >= targetCount) break;
+                if (!validateMcqStructure(q)) {
+                    droppedInvalidStructure += 1;
+                    continue;
+                }
+                const key = q.text.trim().toLowerCase();
+                if (existingStemSet.has(key) || usedTexts.has(key)) {
+                    droppedDuplicate += 1;
+                    continue;
+                }
+                kept.push(q);
+                usedTexts.add(key);
+            }
+        }
+
+        if (kept.length !== targetCount) {
+            throw Object.assign(
+                new Error(
+                    `MCQ complement produced ${kept.length} usable questions but ${targetCount} were requested.`
+                ),
+                { code: "AI_GENERATION_FAILED" }
+            );
+        }
+
         const included = kept.length;
 
         job.draftQuestions = kept.map((q) => ({
@@ -430,21 +491,19 @@ export async function runSingleQuestionRegeneration(jobId, draftId, options = {}
  * (so the regenerated question fills the same slot in the quiz structure).
  *
  * @param {{ type: string, difficulty: string }} draft
- * @returns {{ totalQuestions: number, mcqCount: number, trueFalseCount: number, shortAnswerCount: number, easyCount: number, mediumCount: number, hardCount: number }}
+ * @returns {{ totalQuestions: number, mcqCount: number, trueFalseCount: number, easyCount: number, mediumCount: number, hardCount: number }}
  */
 function buildSingleQuestionParams(draft) {
     const params = {
         totalQuestions: 1,
         mcqCount: 0,
         trueFalseCount: 0,
-        shortAnswerCount: 0,
         easyCount: 0,
         mediumCount: 0,
         hardCount: 0
     };
     if (draft.type === "single") params.mcqCount = 1;
     else if (draft.type === "true_false") params.trueFalseCount = 1;
-    else if (draft.type === "short_answer") params.shortAnswerCount = 1;
     if (draft.difficulty === "easy") params.easyCount = 1;
     else if (draft.difficulty === "medium") params.mediumCount = 1;
     else if (draft.difficulty === "hard") params.hardCount = 1;
@@ -463,8 +522,11 @@ function humanizeFailureReason(error) {
     if (error.code === "GEMINI_QUOTA_EXCEEDED") {
         return "Gemini API quota exceeded. Check your API plan/billing or try again later.";
     }
+    if (error.code === "GEMINI_UNAVAILABLE") {
+        return "Gemini is temporarily overloaded. Please try again in a few minutes.";
+    }
     if (error.code === "AI_MODEL_NOT_FOUND") {
-        return "The configured Gemini model is unavailable. Set GEMINI_QUIZ_MODEL to gemini-2.5-flash or gemini-2.0-flash in .env.";
+        return "The configured Gemini model is unavailable. Set GEMINI_QUIZ_MODEL to gemini-2.5-flash in .env.";
     }
     if (error.code === "AI_GENERATION_FAILED") {
         return "The AI provider rejected the request or returned an invalid response.";

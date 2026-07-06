@@ -120,7 +120,7 @@ export default async function AdminQuizzesPage({ searchParams }) {
                                                 <div className="font-medium text-slate-800 mb-1">{t("auditHeading")}</div>
                                                 <AuditRow label={t("auditSourceFilename")} value={job.sourceFilename} />
                                                 <AuditRow label={t("auditContentHash")} value={job.sourceContentHash ? `${job.sourceContentHash.slice(0, 12)}…` : "—"} mono />
-                                                <AuditRow label={t("auditParams")} value={job.params ? `${job.params.totalQuestions} (MCQ ${job.params.mcqCount}/TF ${job.params.trueFalseCount}/SA ${job.params.shortAnswerCount})` : "—"} />
+                                                <AuditRow label={t("auditParams")} value={job.params ? `${job.params.totalQuestions} (MCQ ${job.params.mcqCount}/TF ${job.params.trueFalseCount})` : "—"} />
                                                 <AuditRow label={t("auditAiModel")} value={job.aiModel ? `${job.aiProvider || "google-gemini"} / ${job.aiModel}` : "—"} />
                                                 <AuditRow label={t("auditGeneratedBy")} value={job.userId?.name || job.userId?.email || "—"} />
                                             </div>

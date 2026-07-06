@@ -4,7 +4,8 @@ import {
     coerceRawQuestion,
     normalizeDraftQuestion,
     countWords,
-    quoteIsGrounded
+    quoteIsGrounded,
+    filterUngroundedQuestions
 } from "@/service/quiz-generator";
 
 describe("quiz-generator: response coercion", () => {
@@ -45,19 +46,32 @@ describe("quiz-generator: response coercion", () => {
         expect(q.correctOptionIds).toEqual(["b"]);
     });
 
-    it("maps essay type to short_answer", () => {
-        const q = coerceRawQuestion({
+    it("rejects essay and short_answer types", () => {
+        expect(coerceRawQuestion({
             type: "essay",
             difficulty: "hard",
             text: "Explain the water cycle.",
-            options: [],
-            correct_answer: "Evaporation, condensation, precipitation.",
-            explanation: "Full cycle description.",
-            sourceQuote: "Water evaporates from surfaces."
-        });
-        expect(q.type).toBe("short_answer");
-        expect(q.modelAnswer).toBe("Evaporation, condensation, precipitation.");
-        expect(q.correctOptionIds).toEqual([]);
+            correct_answer: "Evaporation.",
+            explanation: "Full cycle."
+        })).toBeNull();
+
+        expect(coerceRawQuestion({
+            type: "short_answer",
+            difficulty: "hard",
+            text: "Explain the water cycle.",
+            correct_answer: "Evaporation.",
+            explanation: "Full cycle."
+        })).toBeNull();
+
+        expect(coerceRawQuestion({
+            question_type: "essay",
+            type: "single",
+            difficulty: "easy",
+            text: "Q?",
+            options: [{ id: "a", text: "A" }],
+            correct_answer: "a",
+            explanation: "x"
+        })).toBeNull();
     });
 
     it("maps mcq and multiple_choice aliases to single", () => {
@@ -94,18 +108,22 @@ describe("quiz-generator: response coercion", () => {
         expect(q.correctOptionIds).toEqual(["t"]);
     });
 
-    it("normalizeDraftQuestion produces DB-ready shape", () => {
+    it("normalizeDraftQuestion produces DB-ready shape for MCQ", () => {
         const normalized = normalizeDraftQuestion({
-            type: "short_answer",
+            type: "single",
             difficulty: "medium",
-            question_text: "Describe X.",
-            correct_answer: "X is Y.",
+            question_text: "Which is correct?",
+            options: [
+                { id: "a", text: "A" },
+                { id: "b", text: "B" }
+            ],
+            correctOptionIds: ["a"],
             explanation: "Because.",
-            source_quote: "X is Y in the text."
+            source_quote: "A is correct in the text."
         });
-        expect(normalized.type).toBe("short_answer");
-        expect(normalized.modelAnswer).toBe("X is Y.");
-        expect(normalized.sourceQuote).toBe("X is Y in the text.");
+        expect(normalized.type).toBe("single");
+        expect(normalized.modelAnswer).toBe("");
+        expect(normalized.sourceQuote).toBe("A is correct in the text.");
         expect(normalized.draftId).toBeTruthy();
     });
 
@@ -143,5 +161,40 @@ describe("quiz-generator: grounding helpers", () => {
         const source = "Photosynthesis converts light energy into chemical energy.";
         expect(quoteIsGrounded(source, "converts light energy")).toBe(true);
         expect(quoteIsGrounded(source, "not in text")).toBe(false);
+    });
+
+    it("quoteIsGrounded normalizes whitespace in source and quote", () => {
+        const source = "Photosynthesis  converts\nlight energy into chemical energy.";
+        expect(quoteIsGrounded(source, "converts light energy")).toBe(true);
+    });
+
+    it("filterUngroundedQuestions strips invalid quotes instead of dropping questions", () => {
+        const source = "Photosynthesis converts light energy into chemical energy.";
+        const questions = [
+            {
+                draftId: "1",
+                type: "single",
+                difficulty: "easy",
+                text: "Valid quote?",
+                options: [{ id: "a", text: "A" }],
+                correctOptionIds: ["a"],
+                explanation: "x",
+                sourceQuote: "converts light energy"
+            },
+            {
+                draftId: "2",
+                type: "true_false",
+                difficulty: "easy",
+                text: "Bad quote?",
+                options: [{ id: "t", text: "True" }, { id: "f", text: "False" }],
+                correctOptionIds: ["t"],
+                explanation: "x",
+                sourceQuote: "fabricated text not in source"
+            }
+        ];
+        const result = filterUngroundedQuestions(questions, source);
+        expect(result).toHaveLength(2);
+        expect(result[0].sourceQuote).toBe("converts light energy");
+        expect(result[1].sourceQuote).toBe("");
     });
 });

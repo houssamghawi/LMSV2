@@ -123,10 +123,24 @@ export function QuizGenerator({ courseId, lessonId }) {
 
     function updateParam(field, value) {
         const n = Number(value);
-        setParams((p) => ({ ...p, [field]: Number.isFinite(n) ? n : 0 }));
+        const next = Number.isFinite(n) ? n : 0;
+        setParams((p) => {
+            const updated = { ...p, [field]: next };
+            if (field === "totalQuestions") {
+                const mcq = Math.ceil(next / 2);
+                updated.mcqCount = mcq;
+                updated.trueFalseCount = Math.max(0, next - mcq);
+                const easy = Math.ceil(next / 3);
+                const medium = Math.ceil((next - easy) / 2);
+                updated.easyCount = easy;
+                updated.mediumCount = medium;
+                updated.hardCount = Math.max(0, next - easy - medium);
+            }
+            return updated;
+        });
     }
 
-    const typeSum = params.mcqCount + params.trueFalseCount + params.shortAnswerCount;
+    const typeSum = params.mcqCount + params.trueFalseCount;
     const difficultySum = params.easyCount + params.mediumCount + params.hardCount;
     const countsOk = typeSum === params.totalQuestions && difficultySum === params.totalQuestions;
 
@@ -385,10 +399,6 @@ export function QuizGenerator({ courseId, lessonId }) {
                     <div>
                         <Label htmlFor="tf">{t("configTrueFalseCount")}</Label>
                         <Input id="tf" type="number" min={0} value={params.trueFalseCount} onChange={(e) => updateParam("trueFalseCount", e.target.value)} />
-                    </div>
-                    <div>
-                        <Label htmlFor="sa">{t("configShortAnswerCount")}</Label>
-                        <Input id="sa" type="number" min={0} value={params.shortAnswerCount} onChange={(e) => updateParam("shortAnswerCount", e.target.value)} />
                     </div>
                     <div>
                         <Label htmlFor="easy">{t("configEasyCount")}</Label>
