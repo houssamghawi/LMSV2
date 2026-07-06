@@ -20,8 +20,7 @@ import { cn } from "@/lib/utils";
 
 const TYPE_LABEL_KEY = {
     single: "draftTypeSingle",
-    true_false: "draftTypeTrueFalse",
-    short_answer: "draftTypeShortAnswer"
+    true_false: "draftTypeTrueFalse"
 };
 const DIFFICULTY_LABEL_KEY = {
     easy: "draftDifficultyEasy",
@@ -141,13 +140,11 @@ export function DraftQuestionCard({ jobId, draft, onChange, onRegenerate, regene
             text: form.text,
             explanation: form.explanation,
             sourceQuote: form.sourceQuote,
-            modelAnswer: form.modelAnswer,
-            instructorState: "edited"
+            modelAnswer: "",
+            instructorState: "edited",
+            options: form.options,
+            correctOptionIds: form.correctOptionIds
         };
-        if (draft.type !== "short_answer") {
-            patch.options = form.options;
-            patch.correctOptionIds = form.correctOptionIds;
-        }
         const ok = await persist(patch);
         if (ok) setEditing(false);
     }
@@ -294,8 +291,7 @@ export function DraftQuestionCard({ jobId, draft, onChange, onRegenerate, regene
                             rows={2}
                         />
                     </div>
-                    {draft.type !== "short_answer" && (
-                        <div className="space-y-2">
+                    <div className="space-y-2">
                             <Label>{t("draftOptionsLabel")}</Label>
                             <ul className="space-y-2">
                                 {form.options.map((opt, idx) => {
@@ -330,7 +326,6 @@ export function DraftQuestionCard({ jobId, draft, onChange, onRegenerate, regene
                                 {t("draftAddOption")}
                             </Button>
                         </div>
-                    )}
                     <div>
                         <Label>{t("draftExplanationLabel")}</Label>
                         <Textarea
@@ -346,16 +341,6 @@ export function DraftQuestionCard({ jobId, draft, onChange, onRegenerate, regene
                             onChange={(e) => update("sourceQuote", e.target.value)}
                         />
                     </div>
-                    {draft.type === "short_answer" && (
-                        <div>
-                            <Label>{t("draftModelAnswerLabel")}</Label>
-                            <Textarea
-                                value={form.modelAnswer}
-                                onChange={(e) => update("modelAnswer", e.target.value)}
-                                rows={2}
-                            />
-                        </div>
-                    )}
                     <div className="flex gap-2">
                         <Button size="sm" onClick={handleSaveEdit} disabled={saving}>
                             {saving ? <Loader2 className="w-4 h-4 me-1 animate-spin" /> : null}
@@ -369,7 +354,7 @@ export function DraftQuestionCard({ jobId, draft, onChange, onRegenerate, regene
             ) : (
                 <>
                     <p className="font-medium" dir="auto">{draft.text}</p>
-                    {draft.type !== "short_answer" && Array.isArray(draft.options) && (
+                    {Array.isArray(draft.options) && draft.options.length > 0 && (
                         <ul className="text-sm text-slate-700 space-y-1">
                             {draft.options.map((opt) => {
                                 const correct = (draft.correctOptionIds || []).includes(opt.id);
@@ -381,12 +366,6 @@ export function DraftQuestionCard({ jobId, draft, onChange, onRegenerate, regene
                                 );
                             })}
                         </ul>
-                    )}
-                    {draft.type === "short_answer" && draft.modelAnswer && (
-                        <div className="text-sm">
-                            <span className="text-slate-500">{t("draftModelAnswerLabel")}: </span>
-                            <span dir="auto">{draft.modelAnswer}</span>
-                        </div>
                     )}
                     {draft.explanation && (
                         <div className="text-sm text-slate-600">

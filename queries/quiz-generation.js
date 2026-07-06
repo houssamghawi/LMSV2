@@ -69,9 +69,14 @@ export async function checkQuota(userId, dailyQuotaPerInstructor) {
  * Look for a prior succeeded GenerationJob for the same course + content hash.
  * Used for the duplicate-upload detection (contracts §2 step 8).
  *
+ * @param {string} sourceContentHash
+ * @param {{ totalQuestions?: number, mcqCount?: number, trueFalseCount?: number } | null} [params]
+ *   When provided, a prior job is only considered a duplicate when its stored
+ *   params match — re-uploading the same document with a different question
+ *   count must trigger fresh generation.
  * @returns {{ isDuplicate: boolean, existingJobId: string|null }}
  */
-export async function checkDuplicate(courseId, sourceContentHash) {
+export async function checkDuplicate(courseId, sourceContentHash, params = null) {
     if (!courseId || !mongoose.Types.ObjectId.isValid(courseId)) {
         return { isDuplicate: false, existingJobId: null };
     }
@@ -85,6 +90,17 @@ export async function checkDuplicate(courseId, sourceContentHash) {
         .sort({ createdAt: -1 })
         .lean();
     if (!existing) return { isDuplicate: false, existingJobId: null };
+
+    if (params && existing.params) {
+        const sameMix =
+            existing.params.totalQuestions === params.totalQuestions &&
+            existing.params.mcqCount === params.mcqCount &&
+            existing.params.trueFalseCount === params.trueFalseCount;
+        if (!sameMix) {
+            return { isDuplicate: false, existingJobId: null };
+        }
+    }
+
     return { isDuplicate: true, existingJobId: existing._id.toString() };
 }
 

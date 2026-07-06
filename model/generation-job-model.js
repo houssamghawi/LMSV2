@@ -18,7 +18,7 @@ const draftQuestionSchema = new Schema(
         },
         type: {
             type: String,
-            enum: ["single", "true_false", "short_answer"],
+            enum: ["single", "true_false"],
             required: true
         },
         difficulty: {
@@ -36,10 +36,9 @@ const draftQuestionSchema = new Schema(
             default: [],
             validate: {
                 validator: function (options) {
-                    if (this.type === "short_answer") return options.length === 0;
                     return options.length >= 2;
                 },
-                message: "MCQ/TF questions need ≥2 options; short_answer must have none"
+                message: "MCQ/TF questions need ≥2 options"
             }
         },
         correctOptionIds: {
@@ -47,7 +46,6 @@ const draftQuestionSchema = new Schema(
             default: [],
             validate: {
                 validator: function (ids) {
-                    if (this.type === "short_answer") return ids.length === 0;
                     const optionIds = (this.options || []).map((o) => o.id);
                     return (
                         ids.length > 0 &&
@@ -60,14 +58,7 @@ const draftQuestionSchema = new Schema(
         },
         modelAnswer: {
             type: String,
-            default: "",
-            validate: {
-                validator: function (v) {
-                    if (this.type === "short_answer") return typeof v === "string" && v.length > 0;
-                    return true;
-                },
-                message: "short_answer questions require a model answer"
-            }
+            default: ""
         },
         explanation: {
             type: String,
@@ -76,7 +67,6 @@ const draftQuestionSchema = new Schema(
         },
         sourceQuote: {
             type: String,
-            required: true,
             default: ""
         },
         instructorState: {
@@ -93,8 +83,7 @@ const generationParamsSchema = new Schema(
     {
         totalQuestions: { type: Number, required: true, default: 10, min: 1 },
         mcqCount: { type: Number, required: true, default: 5, min: 0 },
-        trueFalseCount: { type: Number, required: true, default: 3, min: 0 },
-        shortAnswerCount: { type: Number, required: true, default: 2, min: 0 },
+        trueFalseCount: { type: Number, required: true, default: 5, min: 0 },
         easyCount: { type: Number, default: 4, min: 0 },
         mediumCount: { type: Number, default: 4, min: 0 },
         hardCount: { type: Number, default: 2, min: 0 }

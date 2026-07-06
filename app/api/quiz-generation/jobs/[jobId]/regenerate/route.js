@@ -27,7 +27,6 @@ function normalizeParamsInput(params) {
         totalQuestions: params.totalQuestions ?? params.total_questions,
         mcqCount: params.mcqCount ?? params.mcq_count,
         trueFalseCount: params.trueFalseCount ?? params.tf_count,
-        shortAnswerCount: params.shortAnswerCount ?? params.short_count,
         easyCount: params.easyCount ?? params.easy_count,
         mediumCount: params.mediumCount ?? params.medium_count,
         hardCount: params.hardCount ?? params.hard_count

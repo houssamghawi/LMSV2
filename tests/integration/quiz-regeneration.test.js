@@ -30,7 +30,7 @@ import {
 import { GenerationJob } from "@/model/generation-job-model";
 import { DEFAULT_GENERATION_PARAMS } from "@/lib/constants";
 
-// Initial generation: 3 questions (one per type) with grounded source quotes.
+// Initial generation: 2 questions (MCQ + TF) with grounded source quotes.
 const INITIAL_QUESTIONS = [
   {
     draftId: "draft-mcq-1",
@@ -63,18 +63,6 @@ const INITIAL_QUESTIONS = [
     explanation: "It releases oxygen.",
     sourceQuote: "Photosynthesis converts light into chemical energy.",
     instructorState: "untouched"
-  },
-  {
-    draftId: "draft-sa-1",
-    type: "short_answer",
-    difficulty: "hard",
-    text: "Explain why photosynthesis matters.",
-    options: [],
-    correctOptionIds: [],
-    modelAnswer: "It sustains life by producing oxygen and energy.",
-    explanation: "Per the lecture.",
-    sourceQuote: "Photosynthesis converts light into chemical energy.",
-    instructorState: "untouched"
   }
 ];
 
@@ -100,7 +88,7 @@ const REGEN_SINGLE_QUESTIONS = [
   }
 ];
 
-// Replacement for full regeneration with a new mix (2 MCQ + 1 SA, no TF).
+// Replacement for full regeneration with a new mix (2 MCQ + 1 TF).
 const REGEN_ALL_QUESTIONS = [
   {
     draftId: "fresh-mcq-a",
@@ -137,14 +125,17 @@ const REGEN_ALL_QUESTIONS = [
     instructorState: "untouched"
   },
   {
-    draftId: "fresh-sa-a",
-    type: "short_answer",
+    draftId: "fresh-tf-a",
+    type: "true_false",
     difficulty: "hard",
-    text: "Describe the role of light in photosynthesis.",
-    options: [],
-    correctOptionIds: [],
-    modelAnswer: "Light provides the energy to convert CO2 and water into glucose.",
-    explanation: "Light is the energy source.",
+    text: "Photosynthesis requires sunlight.",
+    options: [
+      { id: "t", text: "True" },
+      { id: "f", text: "False" }
+    ],
+    correctOptionIds: ["t"],
+    modelAnswer: "",
+    explanation: "Light is required.",
     sourceQuote: "Photosynthesis converts light into chemical energy.",
     instructorState: "untouched"
   }
@@ -189,25 +180,24 @@ async function createSucceededJob() {
     questions: INITIAL_QUESTIONS,
     tokensInput: 100,
     tokensOutput: 50,
-    model: "gpt-4.1-mock",
-    provider: "openai"
+    model: "gemini-2.5-flash-mock",
+    provider: "google-gemini"
   });
 
   const uploadReq = buildJobsUploadRequest({
     file: Buffer.from("fake-docx-bytes"),
     courseId: course._id.toString(),
     params: {
-      totalQuestions: 3,
+      totalQuestions: 2,
       mcqCount: 1,
       trueFalseCount: 1,
-      shortAnswerCount: 1,
       easyCount: 1,
       mediumCount: 1,
-      hardCount: 1
+      hardCount: 0
     }
   });
   const uploadRes = await jobsPost(uploadReq, { params: Promise.resolve({}) });
-  expect(uploadRes.status).toBe(202);
+  expect(uploadRes.status).toBe(200);
   const { jobId } = await uploadRes.json();
 
   await runGenerationJob(jobId);
@@ -234,15 +224,15 @@ describe("T036 — regeneration flows", () => {
     const targetDraftId = before.draftQuestions[0].draftId;
     const untouchedDraftId = before.draftQuestions[1].draftId;
     const originalUntouched = JSON.parse(JSON.stringify(before.draftQuestions[1]));
-    const originalThird = JSON.parse(JSON.stringify(before.draftQuestions[2]));
+    const originalSecond = JSON.parse(JSON.stringify(before.draftQuestions[1]));
 
     // Stub the AI to return a single replacement question for this draft.
     generateQuizDraft.mockResolvedValueOnce({
       questions: REGEN_SINGLE_QUESTIONS,
       tokensInput: 30,
       tokensOutput: 20,
-      model: "gpt-4.1-mock",
-      provider: "openai"
+      model: "gemini-2.5-flash-mock",
+      provider: "google-gemini"
     });
 
     const req = buildJsonRequest(
@@ -250,17 +240,14 @@ describe("T036 — regeneration flows", () => {
       { scope: "single", draftId: targetDraftId }
     );
     const res = await regeneratePost(req, { params: Promise.resolve({ jobId }) });
-    expect(res.status).toBe(202);
+    expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.ok).toBe(true);
-    expect(json.status).toBe("running");
-
-    // Drive the async callback (after() is a no-op in tests).
-    await runSingleQuestionRegeneration(jobId, targetDraftId);
+    expect(json.status).toBe("succeeded");
 
     const after = await GenerationJob.findById(jobId).lean();
     expect(after.status).toBe("succeeded");
-    expect(after.draftQuestions).toHaveLength(3);
+    expect(after.draftQuestions).toHaveLength(2);
 
     const replaced = after.draftQuestions.find((d) => d.draftId === targetDraftId);
     expect(replaced).toBeTruthy();
@@ -270,11 +257,11 @@ describe("T036 — regeneration flows", () => {
     expect(replaced.correctOptionIds).toEqual(["a"]);
     expect(replaced.instructorState).toBe("regenerated");
 
-    // The other two drafts are byte-for-byte unchanged.
+    // The other draft is byte-for-byte unchanged.
     const untouched = after.draftQuestions.find((d) => d.draftId === untouchedDraftId);
     expect(JSON.parse(JSON.stringify(untouched))).toEqual(originalUntouched);
-    const third = after.draftQuestions.find((d) => d.draftId === originalThird.draftId);
-    expect(JSON.parse(JSON.stringify(third))).toEqual(originalThird);
+    const second = after.draftQuestions.find((d) => d.draftId === originalSecond.draftId);
+    expect(JSON.parse(JSON.stringify(second))).toEqual(originalSecond);
 
     // AI was called with a single-question mix matching the target's type+difficulty.
     expect(generateQuizDraft).toHaveBeenCalled();
@@ -283,7 +270,6 @@ describe("T036 — regeneration flows", () => {
     expect(passedParams.totalQuestions).toBe(1);
     expect(passedParams.mcqCount).toBe(1);
     expect(passedParams.trueFalseCount).toBe(0);
-    expect(passedParams.shortAnswerCount).toBe(0);
     expect(passedParams.easyCount).toBe(1);
   });
 
@@ -297,15 +283,14 @@ describe("T036 — regeneration flows", () => {
       questions: REGEN_ALL_QUESTIONS,
       tokensInput: 200,
       tokensOutput: 80,
-      model: "gpt-4.1-mock",
-      provider: "openai"
+      model: "gemini-2.5-flash-mock",
+      provider: "google-gemini"
     });
 
     const newParams = {
       totalQuestions: 3,
       mcqCount: 2,
-      trueFalseCount: 0,
-      shortAnswerCount: 1,
+      trueFalseCount: 1,
       easyCount: 1,
       mediumCount: 1,
       hardCount: 1
@@ -315,34 +300,26 @@ describe("T036 — regeneration flows", () => {
       { scope: "all", params: newParams }
     );
     const res = await regeneratePost(req, { params: Promise.resolve({ jobId }) });
-    expect(res.status).toBe(202);
+    expect(res.status).toBe(200);
     const json = await res.json();
     expect(json.ok).toBe(true);
-
-    // The route should have reset the job to "queued" with the new params and
-    // cleared the draft.
-    const queued = await GenerationJob.findById(jobId).lean();
-    expect(queued.status).toBe("queued");
-    expect(queued.params.totalQuestions).toBe(3);
-    expect(queued.params.mcqCount).toBe(2);
-    expect(queued.params.trueFalseCount).toBe(0);
-    expect(queued.params.shortAnswerCount).toBe(1);
-
-    // Drive the async generation callback.
-    await runGenerationJob(jobId);
+    expect(json.status).toBe("succeeded");
 
     const after = await GenerationJob.findById(jobId).lean();
     expect(after.status).toBe("succeeded");
     expect(after.draftQuestions).toHaveLength(3);
+    expect(after.params.totalQuestions).toBe(3);
+    expect(after.params.mcqCount).toBe(2);
+    expect(after.params.trueFalseCount).toBe(1);
 
     // None of the previous draftIds should remain (draft replaced entirely).
     const newIds = after.draftQuestions.map((d) => d.draftId);
     for (const oldId of previousDraftIds) {
       expect(newIds).not.toContain(oldId);
     }
-    // New mix: 2 MCQ + 1 SA, no TF.
+    // New mix: 2 MCQ + 1 TF.
     const types = after.draftQuestions.map((d) => d.type).sort();
-    expect(types).toEqual(["short_answer", "single", "single"]);
+    expect(types).toEqual(["single", "single", "true_false"]);
 
     // The AI must have been called with the new params.
     const lastCallArgs = generateQuizDraft.mock.calls.at(-1);
@@ -389,8 +366,8 @@ describe("T036 — regeneration flows", () => {
       questions: REGEN_SINGLE_QUESTIONS,
       tokensInput: 1,
       tokensOutput: 1,
-      model: "gpt-4.1-mock",
-      provider: "openai"
+      model: "gemini-2.5-flash-mock",
+      provider: "google-gemini"
     });
     const req = buildJsonRequest(
       `http://localhost/api/quiz-generation/jobs/${jobId}/regenerate`,

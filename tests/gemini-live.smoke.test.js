@@ -9,42 +9,52 @@ from the air and release oxygen. This process is essential for life on Earth bec
 the oxygen animals breathe.
 `.trim();
 
-const PARAMS = {
-    totalQuestions: 3,
-    mcqCount: 1,
-    trueFalseCount: 1,
-    shortAnswerCount: 1,
-    easyCount: 1,
-    mediumCount: 1,
-    hardCount: 1
-};
-
 const hasGeminiKey = Boolean(process.env.GEMINI_API_KEY?.trim());
 
+function buildParams(totalQuestions) {
+    const mcqCount = Math.ceil(totalQuestions / 2);
+    const trueFalseCount = totalQuestions - mcqCount;
+    const easyCount = Math.ceil(totalQuestions / 3);
+    const mediumCount = Math.ceil((totalQuestions - easyCount) / 2);
+    const hardCount = Math.max(0, totalQuestions - easyCount - mediumCount);
+    return {
+        totalQuestions,
+        mcqCount,
+        trueFalseCount,
+        easyCount,
+        mediumCount,
+        hardCount
+    };
+}
+
 describe.skipIf(!hasGeminiKey)("Gemini live smoke (requires GEMINI_API_KEY)", () => {
-    it(
-        "generates MCQ, true/false, and short-answer questions",
-        async () => {
-            const result = await generateQuizDraft(SAMPLE_TEXT, PARAMS);
-            expect(result.provider).toBe("google-gemini");
-            expect(result.questions.length).toBeGreaterThan(0);
+    for (const count of [1, 5, 10, 20]) {
+        it(
+            `generates exactly ${count} MCQ and true/false questions`,
+            async () => {
+                const params = buildParams(count);
+                const result = await generateQuizDraft(SAMPLE_TEXT, params);
+                expect(result.provider).toBe("google-gemini");
+                expect(result.model).toMatch(/gemini-2\.5/);
+                expect(result.questions).toHaveLength(count);
 
-            const types = new Set(result.questions.map((q) => q.type));
-            expect(types.has("single")).toBe(true);
-            expect(types.has("true_false")).toBe(true);
-            expect(types.has("short_answer")).toBe(true);
+                const types = new Set(result.questions.map((q) => q.type));
+                expect(types.has("short_answer")).toBe(false);
+                expect(types.has("essay")).toBe(false);
 
-            for (const q of result.questions) {
-                expect(q.text).toBeTruthy();
-                expect(q.explanation).toBeTruthy();
-                if (q.type === "short_answer") {
-                    expect(q.modelAnswer).toBeTruthy();
+                const texts = result.questions.map((q) => q.text.trim().toLowerCase());
+                expect(new Set(texts).size).toBe(texts.length);
+
+                for (const q of result.questions) {
+                    expect(q.text).toBeTruthy();
+                    expect(q.explanation).toBeTruthy();
+                    expect(["single", "true_false"]).toContain(q.type);
+                    if (q.type === "single") {
+                        expect(q.correctOptionIds.length).toBeGreaterThan(0);
+                    }
                 }
-                if (q.type === "single") {
-                    expect(q.correctOptionIds.length).toBeGreaterThan(0);
-                }
-            }
-        },
-        60000
-    );
+            },
+            120000
+        );
+    }
 });

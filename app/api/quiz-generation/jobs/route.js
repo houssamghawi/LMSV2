@@ -57,7 +57,7 @@ function getNumberField(formData, camelName, snakeName) {
  * @param {number} [maxQuestions] - admin cap on totalQuestions
  * @param {boolean} [isMcqComplement] - when true, merge DEFAULT_MCQ_COMPLEMENT_PARAMS
  *   and validate against the stricter MCQ-only schema (trueFalseCount=0,
- *   shortAnswerCount=0, mcqCount=totalQuestions).
+ *   mcqCount=totalQuestions).
  */
 function buildParams(rawCounts, maxQuestions, isMcqComplement = false) {
     const defaults = isMcqComplement
@@ -230,7 +230,6 @@ export async function POST(request) {
             totalQuestions: getNumberField(formData, "totalQuestions", "total_questions"),
             mcqCount: getNumberField(formData, "mcqCount", "mcq_count"),
             trueFalseCount: getNumberField(formData, "trueFalseCount", "tf_count"),
-            shortAnswerCount: getNumberField(formData, "shortAnswerCount", "short_count"),
             easyCount: getNumberField(formData, "easyCount", "easy_count"),
             mediumCount: getNumberField(formData, "mediumCount", "medium_count"),
             hardCount: getNumberField(formData, "hardCount", "hard_count")
@@ -306,7 +305,7 @@ export async function POST(request) {
         // specific to the target quiz's existing stems, so prior drafts are
         // not reusable.
         if (!isMcqComplement) {
-            const dup = await checkDuplicate(courseId, contentHash);
+            const dup = await checkDuplicate(courseId, contentHash, paramsResult.params);
             if (dup.isDuplicate) {
                 const duplicateJob = await GenerationJob.findById(dup.existingJobId).lean();
                 return NextResponse.json(

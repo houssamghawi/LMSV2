@@ -25,32 +25,40 @@ import { Quiz } from "@/model/quizv2-model";
 import { Question } from "@/model/questionv2-model";
 import { GenerationJob } from "@/model/generation-job-model";
 
-vi.mock("@/service/quiz-generator", () => ({
-  generateQuizDraft: vi.fn(async () => ({
-    questions: [
-      {
-        draftId: "mcq-1",
-        type: "single",
-        difficulty: "easy",
-        text: "Which gas do plants release during photosynthesis?",
-        options: [
-          { id: "a", text: "Oxygen" },
-          { id: "b", text: "Carbon dioxide" },
-          { id: "c", text: "Nitrogen" },
-          { id: "d", text: "Hydrogen" }
-        ],
-        correctOptionIds: ["a"],
-        modelAnswer: "",
-        explanation: "Plants release oxygen as a byproduct of photosynthesis.",
-        sourceQuote: "Photosynthesis converts light into chemical energy.",
-        instructorState: "untouched"
-      }
+function buildValidMcq(id, text) {
+  return {
+    draftId: `mcq-${id}`,
+    type: "single",
+    difficulty: "easy",
+    text,
+    options: [
+      { id: "a", text: "Oxygen" },
+      { id: "b", text: "Carbon dioxide" },
+      { id: "c", text: "Nitrogen" },
+      { id: "d", text: "Hydrogen" }
     ],
-    tokensInput: 100,
-    tokensOutput: 50,
-    model: "gpt-4.1-mock",
-    provider: "openai"
-  }))
+    correctOptionIds: ["a"],
+    modelAnswer: "",
+    explanation: "Plants release oxygen as a byproduct of photosynthesis.",
+    sourceQuote: "Photosynthesis converts light into chemical energy.",
+    instructorState: "untouched"
+  };
+}
+
+vi.mock("@/service/quiz-generator", () => ({
+  generateQuizDraft: vi.fn(async (extractedText, params) => {
+    const total = params?.totalQuestions ?? 8;
+    const questions = Array.from({ length: total }, (_, i) =>
+      buildValidMcq(i + 1, `MCQ ${i + 1} about photosynthesis?`)
+    );
+    return {
+      questions,
+      tokensInput: 100,
+      tokensOutput: 50,
+      model: "gemini-2.5-flash-mock",
+      provider: "google-gemini"
+    };
+  })
 }));
 
 vi.mock("@/service/docx-extractor", async () => {
@@ -174,7 +182,7 @@ describe("T015 — per-role authorization for MCQ complement endpoints", () => {
       });
       const req = buildComplementUploadRequest(courseA._id.toString(), quizA._id.toString());
       const res = await jobsPost(req, { params: Promise.resolve({}) });
-      expect(res.status).toBe(202);
+      expect(res.status).toBe(200);
       const json = await res.json();
       expect(json.jobType).toBe("mcq_complement");
       expect(json.targetQuizId).toBe(quizA._id.toString());
@@ -210,7 +218,7 @@ describe("T015 — per-role authorization for MCQ complement endpoints", () => {
       setLoggedInUser({ id: admin._id.toString(), role: "admin", email: admin.email });
       const req = buildComplementUploadRequest(courseA._id.toString(), quizA._id.toString());
       const res = await jobsPost(req, { params: Promise.resolve({}) });
-      expect(res.status).toBe(202);
+      expect(res.status).toBe(200);
     });
   });
 
@@ -267,8 +275,8 @@ describe("T015 — per-role authorization for MCQ complement endpoints", () => {
       const res = await appendPost(req, { params: Promise.resolve({ jobId }) });
       expect(res.status).toBe(201);
       const json = await res.json();
-      expect(json.appendedCount).toBe(1);
-      expect(json.totalQuestionCount).toBe(2); // 1 SA + 1 MCQ
+      expect(json.appendedCount).toBe(8);
+      expect(json.totalQuestionCount).toBe(9); // 1 SA + 8 MCQ
     });
 
     it("201 when admin appends any instructor's approved MCQs", async () => {
