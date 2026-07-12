@@ -86,6 +86,20 @@ export async function updateLesson(lessonId, data) {
         const allowed = parsed.data;
         if (Object.keys(allowed).length === 0) return;
         await Lesson.findByIdAndUpdate(lessonId, { $set: allowed }, { runValidators: true });
+
+        if (allowed.description !== undefined) {
+            const { syncLessonEmbeddings } = await import("@/service/lecture-embedder");
+            const courseId =
+                (await Module.findOne({ lessonIds: lessonId }).select("course").lean())
+                    ?.course?.toString() ?? null;
+            if (courseId) {
+                try {
+                    await syncLessonEmbeddings(lessonId, courseId);
+                } catch (embedError) {
+                    console.error("[UPDATE_LESSON] Embedding sync failed:", embedError);
+                }
+            }
+        }
     } catch (error) {
         throw new Error(error?.message || 'Failed to update lesson');
     }
@@ -138,10 +152,39 @@ export async function deleteLesson(lessonId, moduleId){
         }
         
         module.lessonIds.pull(new mongoose.Types.ObjectId(lessonId));
+
+        const courseId = module.course?.toString?.() ?? null;
+        if (courseId) {
+            try {
+                const { removeLessonEmbeddings } = await import("@/service/lecture-embedder");
+                await removeLessonEmbeddings(lessonId, courseId);
+            } catch (embedError) {
+                console.error("[DELETE_LESSON] Failed to remove embeddings:", embedError);
+            }
+        }
+
         await Lesson.findByIdAndDelete(lessonId);
         await module.save();
     } catch (error) {
         throw new Error(error?.message || 'Failed to delete lesson');
+    }
+}
+
+export async function getLessonEmbeddingStatusAction(lessonId) {
+    await dbConnect();
+    try {
+        const user = await getLoggedInUser();
+        if (!user) {
+            throw new Error("Unauthorized: Please log in");
+        }
+
+        const { assertInstructorOwnsLesson } = await import("@/lib/authorization");
+        await assertInstructorOwnsLesson(lessonId, user.id, user);
+
+        const { getLessonEmbeddingStatus } = await import("@/service/lecture-embedder");
+        return getLessonEmbeddingStatus(lessonId);
+    } catch (error) {
+        throw new Error(error?.message || "Failed to load embedding status");
     }
 }
 

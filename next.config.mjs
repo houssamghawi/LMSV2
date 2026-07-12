@@ -37,7 +37,8 @@ const nextConfig = {
         contentDispositionType: 'attachment',
         contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     },
-    serverExternalPackages: ['mongoose'],
+    // ChromaDB uses dynamic imports for optional @chroma-core/* embedders; keep it external.
+    serverExternalPackages: ['mongoose', 'chromadb'],
     experimental: {
         serverActions: {
             bodySizeLimit: '2mb',

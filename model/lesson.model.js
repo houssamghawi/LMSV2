@@ -59,6 +59,23 @@ const lessonSchema = new Schema({
         required: true, 
         type: Number
     },
+    tutorEmbeddingStatus: {
+        type: String,
+        enum: ["none", "pending", "ready", "failed"],
+        default: "none"
+    },
+    tutorContentHash: {
+        type: String,
+        default: null
+    },
+    tutorEmbeddedAt: {
+        type: Date,
+        default: null
+    },
+    tutorEmbeddingError: {
+        type: String,
+        default: null
+    }
      
 });
 export const Lesson = mongoose.models.Lesson ?? mongoose.model("Lesson",lessonSchema);

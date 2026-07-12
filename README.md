@@ -8,6 +8,7 @@ A modern Learning Management System built with Next.js 15, supporting course cre
 - **Course Management**: Create courses with modules, lessons, and video content
 - **Quiz System**: Create quizzes for courses and lessons with multiple question types and auto-grading
 - **AI Quiz Generation**: Instructors upload a `.docx` lecture document and receive an AI-generated quiz draft (MCQ / True-False / Short-Answer) tagged with difficulty, answer, explanation, and a verbatim source-quote citation. Short-Answer responses are routed to a per-instructor "Needs grading" queue with auto-finalization. Admin governance provides daily quotas, document size limits, and an audit trail. Requires `GEMINI_API_KEY` (see `.env.example`). Optional: `GEMINI_QUIZ_MODEL` (defaults to `gemini-2.5-flash`).
+- **Context-Bound AI Tutor**: Students ask questions about a lesson and receive answers grounded exclusively in lecture content, with direct citations—or a standardized out-of-context message when the answer is not found. Instructors review interaction logs; admins configure tutor behavior. Requires `GEMINI_API_KEY` and a ChromaDB instance (see `.env.example` and `specs/003-context-bound-ai-tutor/`).
 - **AI MCQ Complement for Existing Quizzes**: Instructors open an existing quiz (typically one containing Short-Answer questions), upload a `.docx` lecture file, and generate MCQ-only questions that are appended to the quiz without disturbing existing questions. Each generated MCQ has exactly 4 options (A–D), a correct-answer letter, a 1-sentence justification from the source text, and a difficulty tag (Easy / Medium / Hard). The instructor reviews, edits, deletes, regenerates, and selectively approves MCQs in a draft view before the backend atomically appends them via a MongoDB transaction. A Dice-coefficient duplicate filter (≥0.8 against existing question stems) prevents re-asking questions already on the quiz. Published quizzes with existing attempts require explicit confirmation before append. Reuses spec 001's OpenAI pipeline, `mammoth` extraction, consent, and shared daily quota — zero new runtime dependencies, zero new env vars. See `specs/002-ai-mcq-complement/`.
 - **Enrollment & Payments**: MockPay integration for simulated payments (demo/testing)
 - **Progress Tracking**: Monitor student progress through courses and lessons
@@ -43,6 +44,9 @@ RESEND_API_KEY=your-resend-api-key  # Optional
 GEMINI_API_KEY=your-gemini-api-key
 # Optional — defaults to gemini-2.5-flash
 GEMINI_QUIZ_MODEL=gemini-2.5-flash
+
+# AI Tutor (see specs/003-context-bound-ai-tutor)
+CHROMA_URL=http://localhost:8000
 ```
 
 > The `GEMINI_API_KEY` is required only when the **AI Quiz Generation** feature is used. `GEMINI_QUIZ_MODEL` defaults to `gemini-2.5-flash` if unset (`gemini-1.5-*` models are no longer available on the API). Never commit real API keys — `.env*` is gitignored.
@@ -94,6 +98,65 @@ Extend an existing quiz with AI-generated multiple-choice questions.
 ### New Env Vars and Dependencies
 
 None. The feature reuses spec 001's OpenAI client, `mammoth` DOCX extractor, NextAuth auth, and the existing `GenerationJob` model (extended with two optional, backward-compatible fields: `targetQuizId` and `jobType`).
+
+## Context-Bound AI Tutor (Spec 003)
+
+A strict, context-bound AI tutor embedded in lesson pages. Students ask questions scoped to a single lesson; the system retrieves relevant lecture chunks via semantic search (ChromaDB) and generates answers with citations using Gemini. When no answer exists in the lecture material, the tutor returns a configurable out-of-context message—never guessing or using external knowledge.
+
+### Prerequisites
+
+- **MongoDB** running (same as the rest of the LMS)
+- **ChromaDB** running via Docker for vector storage:
+  ```bash
+  docker run -d --name chromadb -p 8000:8000 chromadb/chroma:latest
+  ```
+- **`GEMINI_API_KEY`** set in `.env` (reuses the existing Gemini integration)
+- **`CHROMA_URL`** set in `.env` (defaults to `http://localhost:8000`)
+
+### Environment Variables
+
+| Variable | Required | Default | Purpose |
+|----------|----------|---------|---------|
+| `GEMINI_API_KEY` | Yes (when tutor is used) | — | Answer generation and text embeddings |
+| `CHROMA_URL` | Yes (when tutor is used) | `http://localhost:8000` | ChromaDB HTTP endpoint for lecture chunk vectors |
+
+See `.env.example` for the full list. Never commit real API keys—`.env*` is gitignored.
+
+### ChromaDB Setup
+
+ChromaDB runs as an external service (like MongoDB), not bundled in the Next.js app:
+
+```bash
+# Start ChromaDB
+docker run -d --name chromadb -p 8000:8000 chromadb/chroma:latest
+
+# Verify it is running
+curl http://localhost:8000/api/v1/heartbeat
+
+# Stop / remove (when needed)
+docker stop chromadb && docker rm chromadb
+```
+
+Lecture content must be embedded into ChromaDB before the tutor can answer questions for a lesson. See `docs/ai-tutor.md` and `specs/003-context-bound-ai-tutor/quickstart.md` for setup and validation.
+
+### New Dependencies
+
+| Package | Purpose |
+|---------|---------|
+| `chromadb` | JavaScript client for ChromaDB vector store |
+
+### New Endpoints
+
+| Method | Path | Purpose |
+|--------|------|---------|
+| `POST` | `/api/tutor/ask` | Submit a question; returns cited answer or out-of-context message |
+| `GET` | `/api/tutor/history` | Paginated interaction history (student own / instructor course-wide) |
+| `POST` | `/api/tutor/feedback` | Thumbs up/down on an interaction |
+| `GET` | `/api/tutor/config` | Admin: read tutor configuration |
+| `PUT` | `/api/tutor/config` | Admin: update tutor configuration |
+| `POST` | `/api/tutor/report` | Student: report an issue with a response |
+
+Full API contract: `specs/003-context-bound-ai-tutor/contracts/ai-tutor-api.md`
 
 ## Payment System
 

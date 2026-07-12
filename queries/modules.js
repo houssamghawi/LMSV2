@@ -27,6 +27,15 @@ export async function getModule(moduleId){
     }
 }
 
+export async function getModulesForCourse(courseId) {
+    await dbConnect();
+    try {
+        return Module.find({ course: courseId }).sort({ order: 1 }).lean();
+    } catch (error) {
+        throw new Error(error);
+    }
+}
+
 export async function getModuleBySlug(moduleSlug) {
     await dbConnect();
     try {

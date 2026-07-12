@@ -17,6 +17,7 @@ import {
     Shield,
     CreditCard,
     SlidersHorizontal,
+    Bot,
     ClipboardCheck
 } from "lucide-react";
 
@@ -31,6 +32,7 @@ const adminNavItems = [
     { titleKey: "analytics", href: "/admin/analytics", icon: BarChart3 },
     { titleKey: "quizzes", href: "/admin/quizzes", icon: FileText },
     { titleKey: "quizSettings", href: "/admin/quiz-settings", icon: SlidersHorizontal },
+    { titleKey: "tutorSettings", href: "/admin/tutor-settings", icon: Bot },
     { titleKey: "grading", href: "/admin/grading", icon: ClipboardCheck },
     { titleKey: "auditLog", href: "/admin/audit-log", icon: FileText },
     { titleKey: "settings", href: "/admin/settings", icon: Settings }

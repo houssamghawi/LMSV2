@@ -11,6 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { GraduationCap } from "lucide-react";
 import { Star } from "lucide-react";
+import { Bot } from "lucide-react";
 import { ArrowUpDown, MoreHorizontal, Pencil } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 
@@ -104,6 +105,12 @@ export function getColumns(t) {
               <DropdownMenuItem className="cursor-pointer">
                 <Star className="h-4 w-4 me-2 fill-primary" />
                 {t("viewReviews")}
+              </DropdownMenuItem>
+            </Link>
+            <Link href={`/dashboard/courses/${id}/tutor-analytics`}>
+              <DropdownMenuItem className="cursor-pointer">
+                <Bot className="h-4 w-4 me-2" />
+                {t("viewTutorAnalytics")}
               </DropdownMenuItem>
             </Link>
           </DropdownMenuContent>

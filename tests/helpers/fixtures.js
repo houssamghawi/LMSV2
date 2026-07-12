@@ -4,9 +4,14 @@
 import mongoose from "mongoose";
 import { User } from "@/model/user-model";
 import { Course } from "@/model/course-model";
+import { Lesson } from "@/model/lesson.model";
+import { Module } from "@/model/module.model";
 import { AIProcessingConsent } from "@/model/ai-consent-model";
 import { AdminQuizConfig } from "@/model/admin-quiz-config-model";
-import { AI_CONSENT_VERSION, DEFAULT_ADMIN_QUIZ_CONFIG } from "@/lib/constants";
+import { LectureChunk } from "@/model/lecture-chunk-model";
+import { TutorConfiguration } from "@/model/tutor-config-model";
+import { enrollForCourse } from "@/queries/enrollments";
+import { AI_CONSENT_VERSION, DEFAULT_ADMIN_QUIZ_CONFIG, DEFAULT_TUTOR_CONFIG } from "@/lib/constants";
 
 export async function seedUser(overrides = {}) {
   const defaults = {
@@ -77,4 +82,95 @@ export function buildJsonRequest(url, body, method = "POST") {
     headers: { "Content-Type": "application/json" },
     body: body == null ? undefined : JSON.stringify(body)
   });
+}
+
+export function buildGetRequest(url, params = {}) {
+  const u = new URL(url);
+  for (const [key, value] of Object.entries(params)) {
+    if (value != null && value !== "") {
+      u.searchParams.set(key, String(value));
+    }
+  }
+  return new Request(u.toString(), { method: "GET" });
+}
+
+export async function seedTutorInteraction({
+  studentId,
+  courseId,
+  lessonId,
+  overrides = {}
+}) {
+  const { TutorInteraction } = await import("@/model/tutor-interaction-model");
+  return TutorInteraction.create({
+    question: "Where does photosynthesis occur?",
+    response: "Photosynthesis occurs in the chloroplasts.",
+    citation: "Photosynthesis occurs in the chloroplasts.",
+    contextStatus: "answered",
+    detectedLanguage: "en",
+    studentId,
+    courseId,
+    lessonId,
+    ...overrides
+  });
+}
+
+export async function seedLesson(overrides = {}) {
+  const slug = overrides.slug || `lesson-${Math.random().toString(36).slice(2)}`;
+  return Lesson.create({
+    title: "Introduction",
+    slug,
+    order: 1,
+    duration: 10,
+    active: true,
+    access: "private",
+    description:
+      "Photosynthesis occurs in the chloroplasts of plant cells.",
+    ...overrides
+  });
+}
+
+export async function seedModule(courseId, lessonIds = [], overrides = {}) {
+  const slug = overrides.slug || `module-${Math.random().toString(36).slice(2)}`;
+  return Module.create({
+    title: "Module 1",
+    slug,
+    course: courseId,
+    lessonIds,
+    order: 0,
+    active: true,
+    ...overrides
+  });
+}
+
+export async function seedEnrollment(courseId, studentId) {
+  return enrollForCourse(courseId, studentId, "mockpay");
+}
+
+export async function seedLectureChunks(lessonId, courseId, count = 1) {
+  const docs = [];
+  for (let i = 0; i < count; i++) {
+    docs.push({
+      chromaId: `${lessonId}_${i}`,
+      lessonId,
+      courseId,
+      chunkIndex: i,
+      startOffset: i * 100,
+      endOffset: (i + 1) * 100,
+      tokenCount: 50,
+      contentHash: `hash-${i}`
+    });
+  }
+  return LectureChunk.insertMany(docs);
+}
+
+export async function seedTutorConfig(overrides = {}) {
+  return TutorConfiguration.findOneAndUpdate(
+    { courseId: overrides.courseId ?? null },
+    {
+      ...DEFAULT_TUTOR_CONFIG,
+      updatedBy: new mongoose.Types.ObjectId(),
+      ...overrides
+    },
+    { upsert: true, new: true }
+  );
 }

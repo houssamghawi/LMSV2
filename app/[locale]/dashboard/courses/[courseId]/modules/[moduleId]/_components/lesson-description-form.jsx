@@ -26,7 +26,7 @@ const formSchema = z.object({
   description: z.string().min(1),
 });
 
-export const LessonDescriptionForm = ({ initialData, courseId, lessonId }) => {
+export const LessonDescriptionForm = ({ initialData, courseId, lessonId, onSaved }) => {
   const t = useTranslations("ChapterEdit");
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
@@ -47,8 +47,9 @@ export const LessonDescriptionForm = ({ initialData, courseId, lessonId }) => {
   const onSubmit = async (values) => {
     try {
       await updateLesson(lessonId,values);
-      setDescription(values.title);
+      setDescription(values.description);
       toast.success(t("lessonUpdated"));
+      onSaved?.();
       toggleEdit();
       router.refresh();
     } catch (error) {
