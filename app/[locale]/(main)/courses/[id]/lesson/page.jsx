@@ -2,9 +2,14 @@ import { getTranslations } from "next-intl/server";
 import { Separator } from "@/components/ui/separator";
 import VideoDescription from "./_components/video-description";
 import { LessonVideoWrapper } from "./_components/lesson-video-wrapper";
+import { AiTutorPanel } from "./_components/ai-tutor-panel";
 import { getCourseDetails } from "@/queries/courses";
 import { replaceMongoIdInArray, replaceMongoIdInObject } from "@/lib/convertData";
 import { getLessonBySlug } from "@/queries/lessons";
+import { getLoggedInUser } from "@/lib/loggedin-user";
+import { hasEnrollmentForCourse } from "@/queries/enrollments";
+import { resolveTutorConfig } from "@/queries/tutor-interactions";
+import { hasEmbeddedContent } from "@/service/lecture-embedder";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +30,21 @@ const Course = async ({ params, searchParams }) => {
 
 	// Serialize for client components (strip ObjectId/Buffer/toJSON)
 	const lessonPlain = lessonToPay ? JSON.parse(JSON.stringify(lessonToPay)) : null;
+
+	const user = await getLoggedInUser();
+	const enrolled = user ? await hasEnrollmentForCourse(id, user.id) : false;
+	const tutorConfig = await resolveTutorConfig(id);
+	const embedded = lessonPlain ? await hasEmbeddedContent(lessonPlain.id) : false;
+
+	let tutorDisabledReason = null;
+	if (!enrolled) {
+		tutorDisabledReason = "notEnrolled";
+	} else if (!tutorConfig.enabled) {
+		tutorDisabledReason = "tutorDisabled";
+	} else if (!embedded) {
+		tutorDisabledReason = "noLectureContent";
+	}
+	const tutorDisabled = Boolean(tutorDisabledReason);
 
 	if (!lessonPlain) {
 		const t = await getTranslations("Lesson");
@@ -50,6 +70,18 @@ const Course = async ({ params, searchParams }) => {
 				<Separator />
 				<VideoDescription description={lessonPlain.description} />
 			</section>
+
+			{user && (
+				<section className="w-full">
+					<AiTutorPanel
+						courseId={id}
+						lessonId={lessonPlain.id}
+						lessonTitle={lessonPlain.title}
+						disabled={tutorDisabled}
+						disabledReason={tutorDisabledReason}
+					/>
+				</section>
+			)}
 		</div>
 	);
 };

@@ -14,7 +14,7 @@ import { PriceForm } from "./_components/price-form";
 import { TitleForm } from "./_components/title-form";
 import { CourseActions } from "./_components/course-action";
 import AlertBanner from "@/components/alert-banner";
-import { getCourseDetails } from "@/queries/courses";
+import { getModulesForCourse } from "@/queries/modules";
 import { SubTitleForm } from "./_components/subtitle-form";
 import { getCategories } from "@/queries/categories";
 import { replaceMongoIdInArray } from "@/lib/convertData";
@@ -57,9 +57,7 @@ const EditCourse = async ({ params }) => {
     );
   }
 
-  const rawModules = replaceMongoIdInArray(course?.modules || []).sort(
-    (a, b) => a.order - b.order
-  );
+  const rawModules = replaceMongoIdInArray(await getModulesForCourse(courseId));
   const modules = sanitizeData(rawModules);
 
   // ✅ FIX: safe image url (avoid /undefined)

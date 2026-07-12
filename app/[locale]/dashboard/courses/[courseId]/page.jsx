@@ -3,6 +3,7 @@ import {
   CircleDollarSign,
   LayoutDashboard,
   ListChecks,
+  Bot,
 } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import { PriceForm } from "./_components/price-form";
 import { TitleForm } from "./_components/title-form";
 import { CourseActions } from "./_components/course-action";
 import AlertBanner from "@/components/alert-banner";
-import { getCourseDetails } from "@/queries/courses";
+import { getModulesForCourse } from "@/queries/modules";
 import { SubTitleForm } from "./_components/subtitle-form";
 import { getCategories } from "@/queries/categories";
 import { replaceMongoIdInArray } from "@/lib/convertData";
@@ -59,9 +60,7 @@ const EditCourse = async ({ params }) => {
     );
   }
 
-  const rawModules = replaceMongoIdInArray(course?.modules || []).sort(
-    (a, b) => a.order - b.order
-  );
+  const rawModules = replaceMongoIdInArray(await getModulesForCourse(courseId));
   const modules = sanitizeData(rawModules);
 
   // ✅ FIX: safe image url (avoid /undefined)
@@ -80,12 +79,20 @@ const EditCourse = async ({ params }) => {
 
       <div className="p-6">
         <div className="flex items-center justify-between">
-          <Link href={`/dashboard/courses/${courseId}/quizzes`}>
-            <Button variant="outline">
-              <ListChecks className="w-4 h-4 me-2" />
-              {t("quizzes")}
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href={`/dashboard/courses/${courseId}/quizzes`}>
+              <Button variant="outline">
+                <ListChecks className="w-4 h-4 me-2" />
+                {t("quizzes")}
+              </Button>
+            </Link>
+            <Link href={`/dashboard/courses/${courseId}/tutor-analytics`}>
+              <Button variant="outline">
+                <Bot className="w-4 h-4 me-2" />
+                {t("tutorAnalytics")}
+              </Button>
+            </Link>
+          </div>
           <CourseActions courseId={courseId} isActive={course?.active} />
         </div>
 

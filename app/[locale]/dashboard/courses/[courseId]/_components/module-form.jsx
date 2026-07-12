@@ -16,7 +16,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { Loader2, PlusCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ModuleList } from "./module-list";
 import { getSlug } from "@/lib/convertData";
@@ -43,6 +43,10 @@ export const ModulesForm = ({ initialData, courseId }) => {
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+
+  useEffect(() => {
+    setModules(initialData);
+  }, [initialData]);
 
   const toggleCreating = () => setIsCreating((current) => !current);
 

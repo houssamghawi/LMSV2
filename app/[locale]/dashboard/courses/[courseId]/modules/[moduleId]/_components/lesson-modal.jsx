@@ -17,14 +17,17 @@ import { ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { LessonTitleForm } from "./lesson-title-form";
 import { LessonDescriptionForm } from "./lesson-description-form";
+import { LessonEmbeddingStatusLoader } from "./lesson-embedding-status-loader";
 import { LessonAccessForm } from "./lesson-access-form";
 import { VideoUrlForm } from "./video-url-form";
 import { LessonActions } from "./lesson-action";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 export const LessonModal = ({ open, setOpen, courseId, lesson, moduleId }) => {
   const t = useTranslations("ChapterEdit");
   const router = useRouter();
+  const [embeddingRefreshKey, setEmbeddingRefreshKey] = useState(0);
 
   function handleDelete() {
     // Close the modal
@@ -80,6 +83,11 @@ export const LessonModal = ({ open, setOpen, courseId, lesson, moduleId }) => {
                   initialData={{description: lesson?.description}}
                   courseId={courseId}
                   lessonId={lesson?.id}
+                  onSaved={() => setEmbeddingRefreshKey((key) => key + 1)}
+                />
+                <LessonEmbeddingStatusLoader
+                  lessonId={lesson?.id}
+                  refreshKey={embeddingRefreshKey}
                 />
               </div>
               <div>
