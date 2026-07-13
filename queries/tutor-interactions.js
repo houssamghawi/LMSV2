@@ -37,6 +37,77 @@ export async function getTutorInteraction(interactionId) {
 }
 
 /**
+ * Load a student's own interaction when it belongs to the given lesson.
+ *
+ * @param {string} interactionId
+ * @param {string} studentId
+ * @param {string} lessonId
+ */
+export async function getStudentLessonInteraction(interactionId, studentId, lessonId) {
+    const interactionOid = toObjectId(interactionId);
+    const studentOid = toObjectId(studentId);
+    const lessonOid = toObjectId(lessonId);
+    if (!interactionOid || !studentOid || !lessonOid) return null;
+
+    await dbConnect();
+    const interaction = await TutorInteraction.findOne({
+        _id: interactionOid,
+        studentId: studentOid,
+        lessonId: lessonOid
+    }).lean();
+
+    return replaceMongoIdInObject(interaction);
+}
+
+/**
+ * Recent tutor interactions for a student on a lesson, oldest first.
+ *
+ * @param {string} studentId
+ * @param {string} lessonId
+ * @param {number} [limit]
+ */
+export async function getRecentLessonTutorInteractions(studentId, lessonId, limit = 4) {
+    const studentOid = toObjectId(studentId);
+    const lessonOid = toObjectId(lessonId);
+    if (!studentOid || !lessonOid) return [];
+
+    await dbConnect();
+    const safeLimit = Math.min(10, Math.max(1, limit));
+    const interactions = await TutorInteraction.find({
+        studentId: studentOid,
+        lessonId: lessonOid
+    })
+        .sort({ createdAt: -1 })
+        .limit(safeLimit)
+        .lean();
+
+    return replaceMongoIdInArray(interactions.reverse());
+}
+
+/**
+ * Most recent answered interaction for a student on a lesson.
+ *
+ * @param {string} studentId
+ * @param {string} lessonId
+ */
+export async function getLastAnsweredTutorInteraction(studentId, lessonId) {
+    const studentOid = toObjectId(studentId);
+    const lessonOid = toObjectId(lessonId);
+    if (!studentOid || !lessonOid) return null;
+
+    await dbConnect();
+    const interaction = await TutorInteraction.findOne({
+        studentId: studentOid,
+        lessonId: lessonOid,
+        contextStatus: "answered"
+    })
+        .sort({ createdAt: -1 })
+        .lean();
+
+    return replaceMongoIdInObject(interaction);
+}
+
+/**
  * Update feedback on an interaction.
  *
  * @param {string} interactionId

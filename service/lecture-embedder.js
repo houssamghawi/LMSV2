@@ -3,11 +3,12 @@ import { GoogleGenAI } from "@google/genai";
 import { dbConnect } from "@/service/mongo";
 import { Lesson } from "@/model/lesson.model";
 import { Module } from "@/model/module.model";
-import { LectureChunk } from "@/model/lecture-chunk-model";
 import {
     upsertChunks,
     deleteLessonChunks,
-    isVectorStoreAvailable
+    isVectorStoreAvailable,
+    countLessonChunks as countVectorLessonChunks,
+    hasLessonChunks as hasVectorLessonChunks
 } from "@/service/vector-store";
 import {
     TUTOR_CHUNK_SIZE_TOKENS,
@@ -71,17 +72,40 @@ export function stripHtmlContent(html) {
 
 /**
  * Extract embeddable lecture text from a lesson document.
- * Uses the lesson description field (supports HTML from the rich-text editor).
+ * Resolution order (research.md §6, data-model.md):
+ * 1. When a .docx is uploaded (docxFilename set), use extractedText only.
+ * 2. When extractedText is present, use it.
+ * 3. Otherwise fall back to legacy description (HTML stripped).
  *
  * @param {object | string} lessonOrDescription - Lesson doc or raw description string
  * @returns {string}
  */
 export function extractLessonContent(lessonOrDescription) {
-    const raw =
-        typeof lessonOrDescription === "string"
-            ? lessonOrDescription
-            : lessonOrDescription?.description ?? "";
-    return stripHtmlContent(raw);
+    if (typeof lessonOrDescription === "string") {
+        return stripHtmlContent(lessonOrDescription);
+    }
+
+    if (!lessonOrDescription) {
+        return "";
+    }
+
+    // Uploaded file is the sole source — do not resurrect legacy description.
+    if (lessonOrDescription.docxFilename) {
+        const fileText = lessonOrDescription.extractedText;
+        return fileText && String(fileText).trim() ? String(fileText).trim() : "";
+    }
+
+    const extractedText = lessonOrDescription.extractedText;
+    if (extractedText && String(extractedText).trim()) {
+        return String(extractedText).trim();
+    }
+
+    const legacyDescription = lessonOrDescription.description;
+    if (legacyDescription && String(legacyDescription).trim()) {
+        return stripHtmlContent(legacyDescription);
+    }
+
+    return "";
 }
 
 /**
@@ -173,8 +197,8 @@ export function buildChromaId(lessonId, chunkIndex) {
 }
 
 /**
- * Embed lecture content for a lesson: chunk, embed, store in ChromaDB + MongoDB.
- * Replaces any existing chunks for the lesson.
+ * Embed lecture content for a lesson: chunk, embed, store in ChromaDB (vector store only).
+ * Replaces any existing vectors for the lesson.
  *
  * @param {object} params
  * @param {string} params.lessonId
@@ -205,12 +229,12 @@ export async function embedLessonContent({ lessonId, courseId, content }) {
     const embeddings = await embedTexts(textChunks.map((c) => c.text));
 
     const chromaRecords = textChunks.map((chunk, index) => ({
-        id: buildChromaId(lessonId, chunk.chunkIndex),
+        id: buildChromaId(String(lessonId), chunk.chunkIndex),
         embedding: embeddings[index],
         document: chunk.text,
         metadata: {
-            lessonId,
-            courseId,
+            lessonId: String(lessonId),
+            courseId: String(courseId),
             chunkIndex: chunk.chunkIndex,
             startOffset: chunk.startOffset,
             endOffset: chunk.endOffset,
@@ -220,22 +244,6 @@ export async function embedLessonContent({ lessonId, courseId, content }) {
 
     await upsertChunks(courseId, chromaRecords);
 
-    await dbConnect();
-    await LectureChunk.deleteMany({ lessonId });
-    await LectureChunk.insertMany(
-        textChunks.map((chunk, index) => ({
-            chromaId: buildChromaId(lessonId, chunk.chunkIndex),
-            lessonId,
-            courseId,
-            chunkIndex: chunk.chunkIndex,
-            startOffset: chunk.startOffset,
-            endOffset: chunk.endOffset,
-            tokenCount: chunk.tokenCount,
-            contentHash: hashContent(chunk.text),
-            embeddedAt: new Date()
-        }))
-    );
-
     console.info(
         `${LOG_PREFIX} Embedded ${textChunks.length} chunk(s) for lesson ${lessonId}`
     );
@@ -244,34 +252,43 @@ export async function embedLessonContent({ lessonId, courseId, content }) {
 }
 
 /**
- * Remove all embedded chunks for a lesson from ChromaDB and MongoDB.
+ * Remove all embedded vectors for a lesson from ChromaDB.
  *
  * @param {string} lessonId
  * @param {string} courseId
  */
 export async function removeLessonEmbeddings(lessonId, courseId) {
     await deleteLessonChunks(courseId, lessonId);
-    await dbConnect();
-    await LectureChunk.deleteMany({ lessonId });
 }
 
 /**
- * Check whether a lesson has embedded content.
+ * Check whether a lesson has vectors in ChromaDB (RAG source of truth).
  * @param {string} lessonId
+ * @param {string} [courseId]
  */
-export async function hasEmbeddedContent(lessonId) {
-    await dbConnect();
-    const count = await LectureChunk.countDocuments({ lessonId });
-    return count > 0;
+export async function hasEmbeddedContent(lessonId, courseId = null) {
+    const available = await isVectorStoreAvailable();
+    if (!available) return false;
+
+    const resolvedCourseId = courseId ?? (await getCourseIdForLesson(lessonId));
+    if (!resolvedCourseId) return false;
+
+    return hasVectorLessonChunks(resolvedCourseId, lessonId);
 }
 
 /**
- * Count embedded chunks for a lesson.
+ * Count embedded vectors for a lesson in ChromaDB.
  * @param {string} lessonId
+ * @param {string} [courseId]
  */
-export async function countLessonChunks(lessonId) {
-    await dbConnect();
-    return LectureChunk.countDocuments({ lessonId });
+export async function countLessonChunks(lessonId, courseId = null) {
+    const available = await isVectorStoreAvailable();
+    if (!available) return 0;
+
+    const resolvedCourseId = courseId ?? (await getCourseIdForLesson(lessonId));
+    if (!resolvedCourseId) return 0;
+
+    return countVectorLessonChunks(resolvedCourseId, lessonId);
 }
 
 /**
@@ -295,7 +312,11 @@ export async function getCourseIdForLesson(lessonId) {
 export async function syncLessonEmbeddings(lessonId, courseId = null) {
     await dbConnect();
 
-    const lesson = await Lesson.findById(lessonId).lean();
+    const lesson = await Lesson.findById(lessonId)
+        .select(
+            "description extractedText docxFilename tutorEmbeddingStatus tutorContentHash tutorEmbeddedAt tutorEmbeddingError"
+        )
+        .lean();
     if (!lesson) {
         throw new Error("Lesson not found");
     }
@@ -325,8 +346,11 @@ export async function syncLessonEmbeddings(lessonId, courseId = null) {
         lesson.tutorContentHash === contentHash &&
         lesson.tutorEmbeddingStatus === "ready"
     ) {
-        const chunkCount = await countLessonChunks(lessonId);
-        return { status: "ready", chunkCount, skipped: true };
+        const chunkCount = await countLessonChunks(lessonId, resolvedCourseId);
+        if (chunkCount > 0) {
+            return { status: "ready", chunkCount, skipped: true };
+        }
+        // Status says ready but Chroma is empty — force a fresh embed.
     }
 
     await Lesson.findByIdAndUpdate(lessonId, {
@@ -380,7 +404,7 @@ export async function getLessonEmbeddingStatus(lessonId) {
     await dbConnect();
     const lesson = await Lesson.findById(lessonId)
         .select(
-            "tutorEmbeddingStatus tutorEmbeddedAt tutorEmbeddingError tutorContentHash description"
+            "tutorEmbeddingStatus tutorEmbeddedAt tutorEmbeddingError tutorContentHash description extractedText docxFilename"
         )
         .lean();
 
@@ -393,7 +417,10 @@ export async function getLessonEmbeddingStatus(lessonId) {
         };
     }
 
-    const chunkCount = await countLessonChunks(lessonId);
+    const resolvedCourseId = await getCourseIdForLesson(lessonId);
+    const chunkCount = resolvedCourseId
+        ? await countLessonChunks(lessonId, resolvedCourseId)
+        : 0;
     const hasContent = Boolean(extractLessonContent(lesson));
 
     let status = lesson.tutorEmbeddingStatus || "none";

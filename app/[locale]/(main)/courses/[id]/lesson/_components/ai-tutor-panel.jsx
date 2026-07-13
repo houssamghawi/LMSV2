@@ -11,6 +11,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TUTOR_QUESTION_MAX_LENGTH } from "@/lib/constants";
+import { detectLanguage } from "@/lib/language-detector";
 
 function TutorResponseSkeleton() {
     return (
@@ -103,16 +104,29 @@ export function AiTutorPanel({
         const studentMessage = {
             id: `local-q-${Date.now()}`,
             role: "student",
-            content: question
+            content: question,
+            language: detectLanguage(question)
         };
         setMessages((prev) => [...prev, studentMessage]);
         scrollToBottom();
+
+        const conversationHistory = [...messages, studentMessage]
+            .slice(-8)
+            .map((message) => ({
+                role: message.role,
+                content: message.content
+            }));
 
         try {
             const res = await fetch("/api/tutor/ask", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ courseId, lessonId, question })
+                body: JSON.stringify({
+                    courseId,
+                    lessonId,
+                    question,
+                    conversationHistory
+                })
             });
 
             const json = await res.json();
@@ -141,7 +155,8 @@ export function AiTutorPanel({
                     citation: data.citation,
                     interactionId: data.interactionId,
                     feedback: null,
-                    contextStatus: data.contextStatus
+                    contextStatus: data.contextStatus,
+                    language: data.detectedLanguage
                 }
             ]);
             scrollToBottom();
@@ -188,6 +203,7 @@ export function AiTutorPanel({
                         <div
                             ref={listRef}
                             className="max-h-80 space-y-3 overflow-y-auto rounded-md border border-border/60 p-3"
+                            dir="ltr"
                             aria-live="polite"
                             aria-busy={loading}
                             aria-label={t("panelTitle")}
@@ -207,6 +223,7 @@ export function AiTutorPanel({
                                     role={message.role}
                                     content={message.content}
                                     citation={message.citation}
+                                    language={message.language}
                                     interactionId={message.interactionId}
                                     feedback={message.feedback}
                                     showFeedback={message.role === "tutor"}

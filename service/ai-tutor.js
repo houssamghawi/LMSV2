@@ -3,11 +3,19 @@ import { z } from "zod";
 import { getLesson } from "@/queries/lessons";
 import {
     createTutorInteraction,
-    resolveTutorConfig
+    resolveTutorConfig,
+    getRecentLessonTutorInteractions
 } from "@/queries/tutor-interactions";
 import { embedTexts, hasEmbeddedContent } from "@/service/lecture-embedder";
-import { queryChunks, isVectorStoreAvailable } from "@/service/vector-store";
+import { queryChunks, getChunksByIds, isVectorStoreAvailable } from "@/service/vector-store";
 import { detectLanguage, pickLocalizedMessage } from "@/lib/language-detector";
+import {
+    buildRetrievalQuery,
+    formatConversationBlock,
+    mergeConversationTurns,
+    interactionsToTurns,
+    findLastInteractionWithChunks
+} from "@/lib/tutor-conversation";
 import {
     buildTutorSystemPrompt,
     buildTutorUserMessage,
@@ -25,6 +33,7 @@ const tutorResponseSchema = z.object({
     answer: z.string(),
     citation: z.string().nullable(),
     isWithinContext: z.boolean(),
+    isConversational: z.boolean(),
     detectedLanguage: z.enum(["ar", "en"])
 });
 
@@ -121,14 +130,16 @@ export async function generateTutorResponse({
     contextText,
     lessonTitle,
     outOfContextMessage,
-    responseLanguage
+    responseLanguage,
+    conversationBlock
 }) {
     const client = createGeminiClient();
     const systemPrompt = buildTutorSystemPrompt({
         contextText,
         lessonTitle,
         outOfContextMessage,
-        responseLanguage
+        responseLanguage,
+        conversationBlock
     });
     const userMessage = buildTutorUserMessage(question);
     const contents = [
@@ -146,7 +157,7 @@ export async function generateTutorResponse({
                 config: {
                     responseMimeType: "application/json",
                     responseJsonSchema: TUTOR_RESPONSE_JSON_SCHEMA,
-                    temperature: 0.2
+                    temperature: 0.3
                 }
             });
 
@@ -188,8 +199,15 @@ export async function generateTutorResponse({
  * @param {string} params.lessonId
  * @param {string} params.courseId
  * @param {string} params.studentId
+ * @param {Array<{ role: "student" | "tutor", content: string }>} [params.conversationHistory]
  */
-export async function askTutorQuestion({ question, lessonId, courseId, studentId }) {
+export async function askTutorQuestion({
+    question,
+    lessonId,
+    courseId,
+    studentId,
+    conversationHistory = []
+}) {
     const startedAt = Date.now();
 
     const config = await resolveTutorConfiguration(courseId);
@@ -201,7 +219,7 @@ export async function askTutorQuestion({ question, lessonId, courseId, studentId
         );
     }
 
-    const embedded = await hasEmbeddedContent(lessonId);
+    const embedded = await hasEmbeddedContent(lessonId, courseId);
     if (!embedded) {
         throw new TutorServiceError(
             "NO_LECTURE_CONTENT",
@@ -231,9 +249,22 @@ export async function askTutorQuestion({ question, lessonId, courseId, studentId
         responseLanguage
     );
 
+    const recentInteractions = await getRecentLessonTutorInteractions(
+        studentId,
+        lessonId,
+        4
+    );
+    const conversationTurns = mergeConversationTurns(
+        interactionsToTurns(recentInteractions),
+        conversationHistory
+    );
+    const conversationBlock = formatConversationBlock(conversationTurns);
+    const retrievalQuery = buildRetrievalQuery(question, conversationTurns);
+    const chunkSourceInteraction = findLastInteractionWithChunks(recentInteractions);
+
     let queryEmbedding;
     try {
-        [queryEmbedding] = await embedTexts([question]);
+        [queryEmbedding] = await embedTexts([retrievalQuery]);
     } catch (err) {
         logTutorError("AI_SERVICE_ERROR", {
             stage: "embedding",
@@ -247,15 +278,27 @@ export async function askTutorQuestion({ question, lessonId, courseId, studentId
         );
     }
 
-    let chunks;
+    let chunks = [];
     try {
-        chunks = await queryChunks({
+        if (chunkSourceInteraction?.contextChunkIds?.length) {
+            chunks = await getChunksByIds(courseId, chunkSourceInteraction.contextChunkIds);
+        }
+
+        const retrieved = await queryChunks({
             courseId,
             lessonId,
             queryEmbedding,
             topK: config.maxContextChunks,
             relevanceThreshold: config.relevanceThreshold
         });
+
+        const seen = new Set(chunks.map((chunk) => chunk.id));
+        for (const chunk of retrieved) {
+            if (!seen.has(chunk.id)) {
+                chunks.push(chunk);
+                seen.add(chunk.id);
+            }
+        }
     } catch (err) {
         logTutorError("VECTOR_STORE_ERROR", {
             stage: "query",
@@ -269,43 +312,32 @@ export async function askTutorQuestion({ question, lessonId, courseId, studentId
         );
     }
 
+    const contextText = chunks.map((chunk) => chunk.document).join("\n\n");
+    const generated = await generateTutorResponse({
+        question,
+        contextText,
+        lessonTitle: lesson.title,
+        outOfContextMessage,
+        responseLanguage,
+        conversationBlock
+    });
+
     let answer;
     let citation = null;
     let contextStatus;
-    let contextChunkIds = [];
-    let modelUsed = null;
-    let tokensInput = null;
-    let tokensOutput = null;
-    const relevanceScores = chunks.map((chunk) => chunk.similarity);
 
-    if (chunks.length === 0) {
+    if (generated.isConversational) {
+        answer = generated.answer;
+        contextStatus = "answered";
+    } else if (generated.isWithinContext) {
+        answer = generated.answer;
+        citation = generated.citation
+            ? formatCitation(generated.citation, lesson.title)
+            : null;
+        contextStatus = "answered";
+    } else {
         answer = outOfContextMessage;
         contextStatus = "out_of_context";
-    } else {
-        const contextText = chunks.map((chunk) => chunk.document).join("\n\n");
-        const generated = await generateTutorResponse({
-            question,
-            contextText,
-            lessonTitle: lesson.title,
-            outOfContextMessage,
-            responseLanguage
-        });
-
-        modelUsed = generated.model;
-        tokensInput = generated.tokensInput;
-        tokensOutput = generated.tokensOutput;
-        contextChunkIds = chunks.map((chunk) => chunk.id);
-
-        if (generated.isWithinContext) {
-            answer = generated.answer;
-            citation = generated.citation
-                ? formatCitation(generated.citation, lesson.title)
-                : null;
-            contextStatus = "answered";
-        } else {
-            answer = outOfContextMessage;
-            contextStatus = "out_of_context";
-        }
     }
 
     const interaction = await createTutorInteraction({
@@ -313,17 +345,18 @@ export async function askTutorQuestion({ question, lessonId, courseId, studentId
         response: answer,
         citation,
         contextStatus,
-        contextChunkIds,
+        contextChunkIds: chunks.map((chunk) => chunk.id),
         detectedLanguage: responseLanguage,
         studentId,
         courseId,
         lessonId,
         metadata: {
-            modelUsed,
-            tokensInput,
-            tokensOutput,
+            modelUsed: generated.model,
+            tokensInput: generated.tokensInput,
+            tokensOutput: generated.tokensOutput,
             responseTimeMs: Date.now() - startedAt,
-            relevanceScores
+            relevanceScores: chunks.map((chunk) => chunk.similarity),
+            isConversational: generated.isConversational
         }
     });
 

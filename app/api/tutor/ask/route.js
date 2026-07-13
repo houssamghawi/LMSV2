@@ -69,7 +69,7 @@ export async function POST(request) {
             );
         }
 
-        const { lessonId, courseId, question } = parsed.data;
+        const { lessonId, courseId, question, conversationHistory } = parsed.data;
 
         const enrolled = await hasEnrollmentForCourse(courseId, user.id);
         if (!enrolled) {
@@ -113,7 +113,8 @@ export async function POST(request) {
             question,
             lessonId,
             courseId,
-            studentId: user.id
+            studentId: user.id,
+            conversationHistory: conversationHistory ?? []
         });
 
         return NextResponse.json(

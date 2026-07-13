@@ -142,11 +142,16 @@ export function TutorHistoryList({ courseId, refreshKey = 0, onFeedback, onRepor
                                     )}
                                 </div>
 
-                                <ChatMessage role="student" content={item.question} />
+                                <ChatMessage
+                                    role="student"
+                                    content={item.question}
+                                    language={item.detectedLanguage}
+                                />
                                 <ChatMessage
                                     role="tutor"
                                     content={item.response}
                                     citation={item.citation}
+                                    language={item.detectedLanguage}
                                     interactionId={item.id}
                                     feedback={item.feedback}
                                     showFeedback={Boolean(onFeedback)}

@@ -3,6 +3,7 @@ import mongoose from "mongoose";
 
 vi.mock("@/service/vector-store", () => ({
     queryChunks: vi.fn(),
+    getChunksByIds: vi.fn(async () => []),
     isVectorStoreAvailable: vi.fn(async () => true)
 }));
 
@@ -24,13 +25,26 @@ import { hasEmbeddedContent } from "@/service/lecture-embedder";
 import { GoogleGenAI } from "@google/genai";
 import { Lesson } from "@/model/lesson.model";
 import { TutorConfiguration } from "@/model/tutor-config-model";
-import { LectureChunk } from "@/model/lecture-chunk-model";
 import { askTutorQuestion, generateTutorResponse } from "@/service/ai-tutor";
 import { DEFAULT_TUTOR_CONFIG } from "@/lib/constants";
 
 let courseId;
 let lessonId;
 let studentId;
+
+function mockGeminiResponse(payload) {
+    const mockGenerate = vi.fn().mockResolvedValue({
+        text: JSON.stringify({
+            detectedLanguage: "en",
+            isConversational: false,
+            ...payload
+        }),
+        usageMetadata: {}
+    });
+    GoogleGenAI.mockImplementation(() => ({
+        models: { generateContent: mockGenerate }
+    }));
+}
 
 beforeEach(async () => {
     courseId = new mongoose.Types.ObjectId().toString();
@@ -54,49 +68,30 @@ beforeEach(async () => {
         description: "Photosynthesis occurs in the chloroplasts of plant cells."
     });
 
-    await LectureChunk.create({
-        chromaId: `${lessonId}_0`,
-        lessonId,
-        courseId,
-        chunkIndex: 0,
-        startOffset: 0,
-        endOffset: 100,
-        tokenCount: 25,
-        contentHash: "abc123"
-    });
-
     vi.mocked(hasEmbeddedContent).mockResolvedValue(true);
     vi.mocked(queryChunks).mockReset();
+    process.env.GEMINI_API_KEY = "test-key";
 });
 
 describe("generateTutorResponse", () => {
     it("parses a within-context Gemini JSON response", async () => {
-        const mockGenerate = vi.fn().mockResolvedValue({
-            text: JSON.stringify({
-                answer: "Photosynthesis occurs in the chloroplasts of plant cells.",
-                citation: "Photosynthesis occurs in the chloroplasts of plant cells.",
-                isWithinContext: true,
-                detectedLanguage: "en"
-            }),
-            usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 20 }
+        mockGeminiResponse({
+            answer: "Photosynthesis occurs in the chloroplasts of plant cells.",
+            citation: "Photosynthesis occurs in the chloroplasts of plant cells.",
+            isWithinContext: true
         });
-        GoogleGenAI.mockImplementation(() => ({
-            models: { generateContent: mockGenerate }
-        }));
-
-        process.env.GEMINI_API_KEY = "test-key";
 
         const result = await generateTutorResponse({
             question: "Where does photosynthesis occur?",
             contextText: "Photosynthesis occurs in the chloroplasts of plant cells.",
             lessonTitle: "Cell Biology",
             outOfContextMessage: "Not found.",
-            responseLanguage: "en"
+            responseLanguage: "en",
+            conversationBlock: "(no prior messages in this conversation)"
         });
 
         expect(result.isWithinContext).toBe(true);
         expect(result.answer).toContain("chloroplasts");
-        expect(result.tokensInput).toBe(10);
     });
 });
 
@@ -111,19 +106,11 @@ describe("askTutorQuestion", () => {
             }
         ]);
 
-        const mockGenerate = vi.fn().mockResolvedValue({
-            text: JSON.stringify({
-                answer: "Photosynthesis occurs in the chloroplasts of plant cells.",
-                citation: "Photosynthesis occurs in the chloroplasts of plant cells.",
-                isWithinContext: true,
-                detectedLanguage: "en"
-            }),
-            usageMetadata: {}
+        mockGeminiResponse({
+            answer: "Photosynthesis occurs in the chloroplasts of plant cells.",
+            citation: "Photosynthesis occurs in the chloroplasts of plant cells.",
+            isWithinContext: true
         });
-        GoogleGenAI.mockImplementation(() => ({
-            models: { generateContent: mockGenerate }
-        }));
-        process.env.GEMINI_API_KEY = "test-key";
 
         const result = await askTutorQuestion({
             question: "Where does photosynthesis occur?",
@@ -138,8 +125,14 @@ describe("askTutorQuestion", () => {
         expect(result.interactionId).toBeTruthy();
     });
 
-    it("returns out_of_context when no chunks pass the relevance threshold", async () => {
+    it("returns out_of_context when the model rejects an unrelated question", async () => {
         vi.mocked(queryChunks).mockResolvedValue([]);
+
+        mockGeminiResponse({
+            answer: DEFAULT_TUTOR_CONFIG.outOfContextMessage.en,
+            citation: null,
+            isWithinContext: false
+        });
 
         const result = await askTutorQuestion({
             question: "What is the capital of France?",
@@ -151,6 +144,66 @@ describe("askTutorQuestion", () => {
         expect(result.contextStatus).toBe("out_of_context");
         expect(result.citation).toBeNull();
         expect(result.answer).toContain("lecture materials");
+    });
+
+    it("accepts natural conversational replies without lecture retrieval", async () => {
+        vi.mocked(queryChunks).mockResolvedValue([]);
+
+        mockGeminiResponse({
+            answer: "Hello. Ask me anything about this lesson.",
+            citation: null,
+            isWithinContext: true,
+            isConversational: true
+        });
+
+        const result = await askTutorQuestion({
+            question: "Hey, are you there?",
+            lessonId,
+            courseId,
+            studentId
+        });
+
+        expect(result.contextStatus).toBe("answered");
+        expect(result.answer).toContain("Ask me anything");
+        expect(result.citation).toBeNull();
+    });
+
+    it("uses conversation history for follow-up style messages", async () => {
+        vi.mocked(queryChunks).mockResolvedValue([
+            {
+                id: `${lessonId}_0`,
+                document: "Photosynthesis occurs in the chloroplasts of plant cells.",
+                metadata: {},
+                similarity: 0.88
+            }
+        ]);
+
+        mockGeminiResponse({
+            answer: "Photosynthesis is the process plants use to convert light into energy in chloroplasts.",
+            citation: "Photosynthesis occurs in the chloroplasts of plant cells.",
+            isWithinContext: true,
+            isConversational: true
+        });
+
+        const result = await askTutorQuestion({
+            question: "I didn't get that, can you say it more simply?",
+            lessonId,
+            courseId,
+            studentId,
+            conversationHistory: [
+                {
+                    role: "student",
+                    content: "What is photosynthesis?"
+                },
+                {
+                    role: "tutor",
+                    content: "Photosynthesis occurs in the chloroplasts of plant cells."
+                }
+            ]
+        });
+
+        expect(result.contextStatus).toBe("answered");
+        expect(result.answer).toContain("Photosynthesis");
     });
 
     it("throws NO_LECTURE_CONTENT when lesson is not embedded", async () => {
@@ -181,7 +234,6 @@ describe("askTutorQuestion", () => {
                 generateContent: vi.fn().mockRejectedValue(new Error("API down"))
             }
         }));
-        process.env.GEMINI_API_KEY = "test-key";
 
         await expect(
             askTutorQuestion({

@@ -1,10 +1,11 @@
 import { replaceMongoIdInArray, replaceMongoIdInObject } from "@/lib/convertData";
+import { LESSON_EDITOR_FIELDS, LESSON_STUDENT_PAGE_FIELDS } from "@/lib/lesson-query-fields";
 import { Lesson } from "@/model/lesson.model";
 import { dbConnect } from "@/service/mongo";
 
 export async function getLesson(lessonId){
     await dbConnect();
-    const lesson = await Lesson.findById(lessonId).lean();
+    const lesson = await Lesson.findById(lessonId).select(LESSON_EDITOR_FIELDS).lean();
     return replaceMongoIdInObject(lesson);
 }
 
@@ -21,7 +22,9 @@ export async function create(lessonData) {
 export async function getLessonBySlug(slug) {
     await dbConnect();
     try {
-        const lesson = await Lesson.findOne({slug: slug }).lean();
+        const lesson = await Lesson.findOne({ slug })
+            .select(LESSON_STUDENT_PAGE_FIELDS)
+            .lean();
         return replaceMongoIdInObject(lesson);
     } catch (error) {
         throw new Error(error);

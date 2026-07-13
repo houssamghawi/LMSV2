@@ -33,7 +33,7 @@ const tutorConfigSchema = new Schema({
     },
     relevanceThreshold: {
         type: Number,
-        default: 0.7,
+        default: 0.55,
         min: 0.5,
         max: 0.95
     },
