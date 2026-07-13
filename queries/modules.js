@@ -1,4 +1,5 @@
 import { replaceMongoIdInObject } from "@/lib/convertData";
+import { LESSON_EDITOR_FIELDS } from "@/lib/lesson-query-fields";
 import { Lesson } from "@/model/lesson.model";
 import { Module } from "@/model/module.model";
 import { dbConnect } from "@/service/mongo";
@@ -19,7 +20,8 @@ export async function getModule(moduleId){
         const module = await Module.findById(moduleId).
         populate({
             path: "lessonIds",
-            model: Lesson
+            model: Lesson,
+            select: LESSON_EDITOR_FIELDS
         }).lean();
         return replaceMongoIdInObject(module);
     } catch (error) {

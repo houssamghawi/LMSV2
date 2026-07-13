@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { VideoPlayer } from "./_components/video-player";
 import { Separator } from "@/components/ui/separator";
-import VideoDescription from "./_components/video-description";
+import LectureContent from "@/app/[locale]/(main)/courses/[id]/lesson/_components/lecture-content";
 import { getCourseDetails } from "@/queries/courses";
 import { replaceMongoIdInArray, replaceMongoIdInObject } from "@/lib/convertData";
 import { getLessonBySlug } from "@/queries/lessons";
@@ -49,7 +49,11 @@ const Course = async ({ params, searchParams }) => {
 
 					</div>
 					<Separator />
-					<VideoDescription description={lessonToPay.description} />
+					<LectureContent
+						extractedHtml={lessonToPay.extractedHtml}
+						description={lessonToPay.description}
+						docxFilename={lessonToPay.docxFilename}
+					/>
 				</div>
 			</div>
 		</div>

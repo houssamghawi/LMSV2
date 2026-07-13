@@ -8,7 +8,6 @@ import {
     seedLesson,
     seedModule,
     seedEnrollment,
-    seedLectureChunks,
     seedTutorConfig,
     buildJsonRequest
 } from "../helpers/fixtures.js";
@@ -16,6 +15,7 @@ import { TutorInteraction } from "@/model/tutor-interaction-model";
 
 vi.mock("@/service/vector-store", () => ({
     queryChunks: vi.fn(),
+    getChunksByIds: vi.fn(async () => []),
     isVectorStoreAvailable: vi.fn(async () => true)
 }));
 
@@ -32,6 +32,7 @@ vi.mock("@google/genai", () => ({
                     answer: "Photosynthesis occurs in the chloroplasts of plant cells.",
                     citation: "Photosynthesis occurs in the chloroplasts of plant cells.",
                     isWithinContext: true,
+                    isConversational: false,
                     detectedLanguage: "en"
                 }),
                 usageMetadata: { promptTokenCount: 12, candidatesTokenCount: 18 }
@@ -59,7 +60,6 @@ beforeEach(async () => {
     });
     await seedModule(course._id, [lesson._id]);
     await seedEnrollment(course._id, student._id);
-    await seedLectureChunks(lesson._id, course._id);
     await seedTutorConfig();
 
     vi.mocked(queryChunks).mockResolvedValue([

@@ -16,12 +16,41 @@ describe("extractLessonContent (T048)", () => {
         );
     });
 
-    it("extracts from lesson object description field", () => {
+    it("extracts from lesson object description field (legacy)", () => {
         expect(
             extractLessonContent({
                 description: "<p>Cell division happens in mitosis.</p>"
             })
         ).toBe("Cell division happens in mitosis.");
+    });
+
+    it("prefers extractedText over legacy description", () => {
+        expect(
+            extractLessonContent({
+                extractedText: "File-based lecture content about mitosis.",
+                description: "<p>Legacy description about photosynthesis.</p>"
+            })
+        ).toBe("File-based lecture content about mitosis.");
+    });
+
+    it("uses extractedText when docxFilename is set and ignores description", () => {
+        expect(
+            extractLessonContent({
+                docxFilename: "507f1f77bcf86cd799439011.docx",
+                extractedText: "Uploaded lecture text.",
+                description: "<p>Old description should not be used.</p>"
+            })
+        ).toBe("Uploaded lecture text.");
+    });
+
+    it("returns empty when docxFilename is set but extractedText is empty", () => {
+        expect(
+            extractLessonContent({
+                docxFilename: "507f1f77bcf86cd799439011.docx",
+                extractedText: null,
+                description: "<p>Legacy description must not resurrect.</p>"
+            })
+        ).toBe("");
     });
 
     it("returns empty string for blank content", () => {

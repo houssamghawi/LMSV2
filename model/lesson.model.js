@@ -75,6 +75,30 @@ const lessonSchema = new Schema({
     tutorEmbeddingError: {
         type: String,
         default: null
+    },
+    docxFilename: {
+        type: String,
+        default: null
+    },
+    docxOriginalName: {
+        type: String,
+        default: null
+    },
+    docxSize: {
+        type: Number,
+        default: null
+    },
+    docxUploadedAt: {
+        type: Date,
+        default: null
+    },
+    extractedHtml: {
+        type: String,
+        default: null
+    },
+    extractedText: {
+        type: String,
+        default: null
     }
      
 });

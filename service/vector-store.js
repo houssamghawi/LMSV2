@@ -2,7 +2,8 @@ import { ChromaClient } from "chromadb";
 import {
     CHROMA_COLLECTION_PREFIX,
     TUTOR_TOP_K_CHUNKS,
-    TUTOR_RELEVANCE_THRESHOLD
+    TUTOR_RELEVANCE_THRESHOLD,
+    TUTOR_RELEVANCE_MIN_FLOOR
 } from "@/lib/constants";
 
 const LOG_PREFIX = "[VECTOR_STORE]";
@@ -92,12 +93,16 @@ export async function heartbeat() {
 export async function upsertChunks(courseId, chunks) {
     if (!chunks?.length) return;
 
-    const collection = await getCourseCollection(courseId);
+    const collection = await getCourseCollection(String(courseId));
     await collection.upsert({
         ids: chunks.map((c) => c.id),
         embeddings: chunks.map((c) => c.embedding),
         documents: chunks.map((c) => c.document),
-        metadatas: chunks.map((c) => c.metadata)
+        metadatas: chunks.map((c) => ({
+            ...c.metadata,
+            lessonId: String(c.metadata.lessonId),
+            courseId: String(c.metadata.courseId)
+        }))
     });
 }
 
@@ -119,12 +124,13 @@ export async function queryChunks({
     topK = TUTOR_TOP_K_CHUNKS,
     relevanceThreshold = TUTOR_RELEVANCE_THRESHOLD
 }) {
-    const collection = await getCourseCollection(courseId);
+    const lessonKey = String(lessonId);
+    const collection = await getCourseCollection(String(courseId));
 
     const result = await collection.query({
         queryEmbeddings: [queryEmbedding],
         nResults: topK,
-        where: { lessonId: { $eq: lessonId } },
+        where: { lessonId: { $eq: lessonKey } },
         include: ["documents", "metadatas", "distances"]
     });
 
@@ -133,18 +139,41 @@ export async function queryChunks({
     const metadatas = result.metadatas?.[0] || [];
     const distances = result.distances?.[0] || [];
 
-    const matches = [];
+    const candidates = [];
     for (let i = 0; i < ids.length; i++) {
         const distance = distances[i] ?? 1;
         const similarity = distanceToSimilarity(distance);
-        if (similarity < relevanceThreshold) continue;
-
-        matches.push({
+        candidates.push({
             id: ids[i],
             document: documents[i] ?? "",
             metadata: metadatas[i] ?? {},
             similarity
         });
+    }
+
+    candidates.sort((a, b) => b.similarity - a.similarity);
+
+    const matches = candidates.filter(
+        (chunk) => chunk.similarity >= relevanceThreshold
+    );
+
+    if (candidates.length > 0 && matches.length === 0) {
+        const maxSimilarity = candidates[0].similarity;
+        console.warn(`${LOG_PREFIX} All ${candidates.length} chunk(s) below relevance threshold`, {
+            lessonId: lessonKey,
+            courseId: String(courseId),
+            maxSimilarity,
+            relevanceThreshold
+        });
+
+        if (maxSimilarity >= TUTOR_RELEVANCE_MIN_FLOOR) {
+            console.info(`${LOG_PREFIX} Using top ${Math.min(topK, candidates.length)} chunk(s) above min floor`, {
+                lessonId: lessonKey,
+                minFloor: TUTOR_RELEVANCE_MIN_FLOOR,
+                maxSimilarity
+            });
+            return candidates.slice(0, topK);
+        }
     }
 
     return matches;
@@ -156,9 +185,9 @@ export async function queryChunks({
  * @param {string} lessonId
  */
 export async function deleteLessonChunks(courseId, lessonId) {
-    const collection = await getCourseCollection(courseId);
+    const collection = await getCourseCollection(String(courseId));
     await collection.delete({
-        where: { lessonId: { $eq: lessonId } }
+        where: { lessonId: { $eq: String(lessonId) } }
     });
 }
 
@@ -171,6 +200,53 @@ export async function deleteChunksByIds(courseId, ids) {
     if (!ids?.length) return;
     const collection = await getCourseCollection(courseId);
     await collection.delete({ ids });
+}
+
+/**
+ * Fetch stored chunks by ID (for follow-up elaboration).
+ *
+ * @param {string} courseId
+ * @param {string[]} ids
+ */
+export async function getChunksByIds(courseId, ids) {
+    if (!ids?.length) return [];
+
+    const collection = await getCourseCollection(String(courseId));
+    const result = await collection.get({
+        ids,
+        include: ["documents", "metadatas"]
+    });
+
+    return (result.ids || []).map((id, index) => ({
+        id,
+        document: result.documents?.[index] ?? "",
+        metadata: result.metadatas?.[index] ?? {},
+        similarity: 1
+    }));
+}
+
+/**
+ * Count vector records for a lesson in ChromaDB.
+ * @param {string} courseId
+ * @param {string} lessonId
+ */
+export async function countLessonChunks(courseId, lessonId) {
+    const collection = await getCourseCollection(String(courseId));
+    const result = await collection.get({
+        where: { lessonId: { $eq: String(lessonId) } },
+        include: []
+    });
+    return result.ids?.length ?? 0;
+}
+
+/**
+ * Whether a lesson has any vectors stored in ChromaDB.
+ * @param {string} courseId
+ * @param {string} lessonId
+ */
+export async function hasLessonChunks(courseId, lessonId) {
+    const count = await countLessonChunks(courseId, lessonId);
+    return count > 0;
 }
 
 /**

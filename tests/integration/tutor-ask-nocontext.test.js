@@ -8,7 +8,6 @@ import {
     seedLesson,
     seedModule,
     seedEnrollment,
-    seedLectureChunks,
     seedTutorConfig,
     buildJsonRequest
 } from "../helpers/fixtures.js";
@@ -16,12 +15,30 @@ import { DEFAULT_TUTOR_CONFIG } from "@/lib/constants";
 
 vi.mock("@/service/vector-store", () => ({
     queryChunks: vi.fn(async () => []),
+    getChunksByIds: vi.fn(async () => []),
     isVectorStoreAvailable: vi.fn(async () => true)
 }));
 
 vi.mock("@/service/lecture-embedder", () => ({
     embedTexts: vi.fn(async () => [[0.1, 0.2, 0.3]]),
     hasEmbeddedContent: vi.fn(async () => true)
+}));
+
+vi.mock("@google/genai", () => ({
+    GoogleGenAI: vi.fn().mockImplementation(() => ({
+        models: {
+            generateContent: vi.fn().mockResolvedValue({
+                text: JSON.stringify({
+                    answer: "I cannot find the answer to your question in the lecture materials. Please refer to your instructor or course resources.",
+                    citation: null,
+                    isWithinContext: false,
+                    isConversational: false,
+                    detectedLanguage: "en"
+                }),
+                usageMetadata: {}
+            })
+        }
+    }))
 }));
 
 const { POST: askPost } = await import("@/app/api/tutor/ask/route.js");
@@ -40,7 +57,6 @@ beforeEach(async () => {
     });
     await seedModule(course._id, [lesson._id]);
     await seedEnrollment(course._id, student._id);
-    await seedLectureChunks(lesson._id, course._id);
     await seedTutorConfig();
 
     setLoggedInUser({

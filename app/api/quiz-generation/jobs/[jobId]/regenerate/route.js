@@ -13,7 +13,7 @@ import {
     runGenerationJob,
     runSingleQuestionRegeneration,
     rememberExtractedText,
-    getRememberedExtractedText
+    resolveJobSourceText
 } from "@/service/generation-orchestrator";
 import mongoose from "mongoose";
 
@@ -123,8 +123,8 @@ export async function POST(request, { params }) {
         // The source text is required to call the AI again. It is retained in
         // the in-memory extracted-text store after the initial generation
         // succeeds (see service/generation-orchestrator.js).
-        const extractedText = getRememberedExtractedText(jobId);
-        if (!extractedText || !extractedText.trim()) {
+        const extractedText = await resolveJobSourceText(job, jobId);
+        if (!extractedText) {
             return NextResponse.json(
                 {
                     ok: false,
@@ -223,7 +223,10 @@ export async function POST(request, { params }) {
 
         rememberExtractedText(jobId, extractedText);
 
-        const result = await runGenerationJob(jobId);
+        const result = await runGenerationJob(jobId, {
+            extractedText,
+            fromLessonStoredText: Boolean(job.lessonId)
+        });
         const updatedJob = await GenerationJob.findById(jobId).lean();
         if (!result.ok || updatedJob?.status === "failed") {
             return NextResponse.json(

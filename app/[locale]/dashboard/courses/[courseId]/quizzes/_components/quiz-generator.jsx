@@ -33,6 +33,7 @@ import {
     AlertDialogTrigger
 } from "@/components/ui/alert-dialog";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import {
     DEFAULT_GENERATION_PARAMS,
@@ -47,9 +48,24 @@ import { DraftQuestionCard } from "./draft-question-card";
  * drafts -> per-question edit/regenerate -> "Regenerate all" with new mix ->
  * save as unpublished quiz.
  */
-export function QuizGenerator({ courseId, lessonId }) {
+export function QuizGenerator({ courseId, lessonId: initialLessonId, course }) {
     const t = useTranslations("QuizGeneration");
+    const tQuiz = useTranslations("Quiz");
     const fmt = useFormatter();
+
+    const allLessons = [];
+    course?.modules?.forEach((module) => {
+        module.lessonIds?.forEach((lesson) => {
+            allLessons.push({ ...lesson, moduleTitle: module.title });
+        });
+    });
+
+    const [selectedLessonId, setSelectedLessonId] = useState(initialLessonId || "");
+    const selectedLesson = allLessons.find((l) => l.id === selectedLessonId) || null;
+    const hasLessonLecture = Boolean(
+        selectedLesson?.docxFilename && selectedLesson?.extractedText?.trim()
+    );
+    const useLessonSource = Boolean(selectedLessonId && hasLessonLecture);
 
     const [consent, setConsent] = useState({ checked: false, hasConsented: false });
     const [file, setFile] = useState(null);
@@ -145,8 +161,12 @@ export function QuizGenerator({ courseId, lessonId }) {
     const countsOk = typeSum === params.totalQuestions && difficultySum === params.totalQuestions;
 
     async function handleGenerate() {
-        if (!file) {
+        if (!useLessonSource && !file) {
             toast.error(t("uploadEmpty"));
+            return;
+        }
+        if (selectedLessonId && !hasLessonLecture && !file) {
+            toast.error(t("lessonNoUpload"));
             return;
         }
         if (!countsOk) {
@@ -160,9 +180,9 @@ export function QuizGenerator({ courseId, lessonId }) {
         setRegeneratingAll(false);
         try {
             const fd = new FormData();
-            fd.append("file", file);
+            if (file && !useLessonSource) fd.append("file", file);
             fd.append("courseId", courseId);
-            if (lessonId) fd.append("lessonId", lessonId);
+            if (selectedLessonId) fd.append("lessonId", selectedLessonId);
             for (const [k, v] of Object.entries(params)) fd.append(k, String(v));
 
             const res = await fetch("/api/quiz-generation/jobs", { method: "POST", body: fd });
@@ -280,7 +300,7 @@ export function QuizGenerator({ courseId, lessonId }) {
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     courseId,
-                    lessonId: lessonId || null,
+                    lessonId: selectedLessonId || null,
                     title: saveForm.title,
                     description: saveForm.description,
                     passPercent: saveForm.passPercent
@@ -322,6 +342,10 @@ export function QuizGenerator({ courseId, lessonId }) {
     const draftsAvailable = drafts.length > 0;
     const anyRegenerating = !!regeneratingDraftId || regeneratingAll;
 
+    const hasSource = useLessonSource || (!selectedLessonId && file);
+    const canGenerate = countsOk && !anyRegenerating && !submitting && hasSource;
+    const lessonSelectedWithoutContent = Boolean(selectedLessonId && !hasLessonLecture);
+
     return (
         <div className="space-y-6">
             <div>
@@ -329,30 +353,80 @@ export function QuizGenerator({ courseId, lessonId }) {
                 <p className="text-slate-600" dir="auto">{t("subtitle")}</p>
             </div>
 
-            {/* Upload */}
-            <div className="rounded-lg border bg-white p-4 space-y-3">
-                <div>
-                    <h3 className="font-medium" dir="auto">{t("uploadTitle")}</h3>
-                    <p className="text-sm text-slate-500" dir="auto">{t("uploadDescription", { maxMB: 10 })}</p>
+            {allLessons.length > 0 && (
+                <div className="rounded-lg border bg-white p-4 space-y-3">
+                    <div>
+                        <h3 className="font-medium" dir="auto">{tQuiz("attachToLesson")}</h3>
+                        <p className="text-sm text-slate-500" dir="auto">{t("lessonSelectHint")}</p>
+                    </div>
+                    <Select
+                        value={selectedLessonId || "none"}
+                        onValueChange={(value) => {
+                            setSelectedLessonId(value === "none" ? "" : value);
+                            setFile(null);
+                        }}
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder={t("lessonSelectPlaceholder")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="none">{t("lessonSelectNone")}</SelectItem>
+                            {allLessons.map((lesson) => (
+                                <SelectItem key={lesson.id} value={lesson.id}>
+                                    {lesson.moduleTitle}: {lesson.title}
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
                 </div>
-                <div
-                    {...getRootProps()}
-                    className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${isDragActive ? "border-emerald-500 bg-emerald-50" : "border-slate-300 hover:border-slate-400"}`}
-                >
-                    <input {...getInputProps()} aria-describedby="upload-hint" />
-                    <FileText className="w-8 h-8 mx-auto text-slate-400 mb-2" />
-                    {file ? (
-                        <p className="text-sm" dir="auto">{file.name}</p>
-                    ) : (
-                        <p className="text-sm text-slate-500" id="upload-hint" dir="auto">
-                            {t("uploadDropHint")}
-                        </p>
-                    )}
-                    <Button type="button" size="sm" variant="outline" className="mt-3">
-                        {t("uploadButton")}
-                    </Button>
+            )}
+
+            {/* Upload or lesson lecture source */}
+            {useLessonSource ? (
+                <div className="rounded-lg border bg-emerald-50 border-emerald-200 p-4 space-y-2">
+                    <div className="flex items-center gap-2">
+                        <FileText className="w-5 h-5 text-emerald-700" />
+                        <h3 className="font-medium text-emerald-900" dir="auto">{t("generateFromUploadedLecture")}</h3>
+                    </div>
+                    <p className="text-sm text-emerald-800" dir="auto">
+                        {t("lessonSourceReady", {
+                            filename: selectedLesson.docxOriginalName || selectedLesson.docxFilename
+                        })}
+                    </p>
                 </div>
-            </div>
+            ) : lessonSelectedWithoutContent ? (
+                <div className="rounded-lg border bg-amber-50 border-amber-200 p-4 space-y-2">
+                    <div className="flex items-center gap-2">
+                        <AlertCircle className="w-5 h-5 text-amber-700" />
+                        <h3 className="font-medium text-amber-900" dir="auto">{t("lessonNoUploadTitle")}</h3>
+                    </div>
+                    <p className="text-sm text-amber-800" dir="auto">{t("lessonNoUpload")}</p>
+                </div>
+            ) : (
+                <div className="rounded-lg border bg-white p-4 space-y-3">
+                    <div>
+                        <h3 className="font-medium" dir="auto">{t("uploadTitle")}</h3>
+                        <p className="text-sm text-slate-500" dir="auto">{t("uploadDescription", { maxMB: 10 })}</p>
+                    </div>
+                    <div
+                        {...getRootProps()}
+                        className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${isDragActive ? "border-emerald-500 bg-emerald-50" : "border-slate-300 hover:border-slate-400"}`}
+                    >
+                        <input {...getInputProps()} aria-describedby="upload-hint" />
+                        <FileText className="w-8 h-8 mx-auto text-slate-400 mb-2" />
+                        {file ? (
+                            <p className="text-sm" dir="auto">{file.name}</p>
+                        ) : (
+                            <p className="text-sm text-slate-500" id="upload-hint" dir="auto">
+                                {t("uploadDropHint")}
+                            </p>
+                        )}
+                        <Button type="button" size="sm" variant="outline" className="mt-3">
+                            {t("uploadButton")}
+                        </Button>
+                    </div>
+                </div>
+            )}
 
             {/* Mix config */}
             <div className="rounded-lg border bg-white p-4 space-y-3">
@@ -416,7 +490,7 @@ export function QuizGenerator({ courseId, lessonId }) {
                 {!countsOk && (
                     <p className="text-sm text-amber-700" dir="auto">{t("configCountsMismatch")}</p>
                 )}
-                <Button onClick={handleGenerate} disabled={!file || submitting || !countsOk || anyRegenerating}>
+                <Button onClick={handleGenerate} disabled={!canGenerate}>
                     {submitting ? <Loader2 className="w-4 h-4 me-2 animate-spin" /> : <Sparkles className="w-4 h-4 me-2" />}
                     {submitting ? t("generating") : t("generateButton")}
                 </Button>

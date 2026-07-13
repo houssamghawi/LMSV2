@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { IconBadge } from "@/components/icon-badge";
 import {
   Dialog,
@@ -7,33 +9,27 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger, 
 } from "@/components/ui/dialog";
-import { LayoutDashboard } from "lucide-react";
-import { Eye } from "lucide-react";
-import { Video } from "lucide-react";
-import { ArrowLeft } from "lucide-react";
+import { LayoutDashboard, Eye, Video, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { LessonTitleForm } from "./lesson-title-form";
-import { LessonDescriptionForm } from "./lesson-description-form";
+import { LessonDocxUpload } from "@/app/[locale]/dashboard/courses/[courseId]/modules/[moduleId]/_components/lesson-docx-upload";
+import { LessonEmbeddingStatusLoader } from "@/app/[locale]/dashboard/courses/[courseId]/modules/[moduleId]/_components/lesson-embedding-status-loader";
 import { LessonAccessForm } from "./lesson-access-form";
 import { VideoUrlForm } from "./video-url-form";
 import { LessonActions } from "./lesson-action";
-import { useRouter } from "next/navigation";
 
 export const LessonModal = ({ open, setOpen, courseId, lesson, moduleId }) => {
   const router = useRouter();
+  const [embeddingRefreshKey, setEmbeddingRefreshKey] = useState(0);
 
   function handleDelete() {
-    // Close the modal
     setOpen(false);
-    // Refresh the page to update the lesson list
     router.refresh();
   }
-  
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {/* <DialogTrigger>Open</DialogTrigger> */}
       <DialogContent
         className="sm:max-w-[1200px] w-[96%] overflow-y-auto max-h-[90vh]"
         onInteractOutside={(e) => {
@@ -70,14 +66,23 @@ export const LessonModal = ({ open, setOpen, courseId, lesson, moduleId }) => {
                   <h2 className="text-xl">Customize Your chapter</h2>
                 </div>
                 <LessonTitleForm
-                  initialData={{title: lesson?.title}}
+                  initialData={{ title: lesson?.title }}
                   courseId={courseId}
                   lessonId={lesson?.id}
                 />
-                <LessonDescriptionForm
-                  initialData={{description: lesson?.description}}
-                  courseId={courseId}
+                <LessonDocxUpload
                   lessonId={lesson?.id}
+                  initialDocx={{
+                    docxFilename: lesson?.docxFilename,
+                    originalName: lesson?.docxOriginalName,
+                    size: lesson?.docxSize,
+                    embeddingStatus: lesson?.tutorEmbeddingStatus
+                  }}
+                  onUploaded={() => setEmbeddingRefreshKey((key) => key + 1)}
+                />
+                <LessonEmbeddingStatusLoader
+                  lessonId={lesson?.id}
+                  refreshKey={embeddingRefreshKey}
                 />
               </div>
               <div>
@@ -86,9 +91,9 @@ export const LessonModal = ({ open, setOpen, courseId, lesson, moduleId }) => {
                   <h2 className="text-xl">Access Settings</h2>
                 </div>
                 <LessonAccessForm
-                 initialData={{isFree: lesson?.access !== 'private'}}
-                 courseId={courseId}
-                 lessonId={lesson?.id}
+                  initialData={{ isFree: lesson?.access !== "private" }}
+                  courseId={courseId}
+                  lessonId={lesson?.id}
                 />
               </div>
             </div>

@@ -85,9 +85,14 @@ export async function updateLesson(lessonId, data) {
         }
         const allowed = parsed.data;
         if (Object.keys(allowed).length === 0) return;
+
+        const existingLesson = await Lesson.findById(lessonId)
+            .select("docxFilename")
+            .lean();
+
         await Lesson.findByIdAndUpdate(lessonId, { $set: allowed }, { runValidators: true });
 
-        if (allowed.description !== undefined) {
+        if (allowed.description !== undefined && !existingLesson?.docxFilename) {
             const { syncLessonEmbeddings } = await import("@/service/lecture-embedder");
             const courseId =
                 (await Module.findOne({ lessonIds: lessonId }).select("course").lean())
@@ -163,6 +168,13 @@ export async function deleteLesson(lessonId, moduleId){
             }
         }
 
+        try {
+            const { cleanupLessonDocxFiles } = await import("@/lib/lesson-docx-files");
+            await cleanupLessonDocxFiles(lessonId);
+        } catch (fileError) {
+            console.error("[DELETE_LESSON] Failed to remove lesson docx files:", fileError);
+        }
+
         await Lesson.findByIdAndDelete(lessonId);
         await module.save();
     } catch (error) {
@@ -185,6 +197,21 @@ export async function getLessonEmbeddingStatusAction(lessonId) {
         return getLessonEmbeddingStatus(lessonId);
     } catch (error) {
         throw new Error(error?.message || "Failed to load embedding status");
+    }
+}
+
+export async function retryLessonEmbeddingAction(lessonId) {
+    await dbConnect();
+    try {
+        const user = await getLoggedInUser();
+        if (!user) {
+            throw new Error("Unauthorized: Please log in");
+        }
+
+        const { retryLessonDocxEmbedding } = await import("@/lib/lesson-docx-retry");
+        return retryLessonDocxEmbedding(lessonId, user.id, user);
+    } catch (error) {
+        throw new Error(error?.message || "Failed to retry embedding");
     }
 }
 

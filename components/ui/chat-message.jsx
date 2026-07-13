@@ -21,6 +21,7 @@ import {
 import { Flag, Loader2, ThumbsDown, ThumbsUp } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { TUTOR_REPORT_DETAILS_MAX_LENGTH } from "@/lib/constants";
+import { resolveChatTextLayout } from "@/lib/chat-text-direction";
 
 /**
  * Chat bubble for student questions and AI tutor responses.
@@ -29,6 +30,7 @@ import { TUTOR_REPORT_DETAILS_MAX_LENGTH } from "@/lib/constants";
  * @param {"student" | "tutor"} props.role
  * @param {string} props.content
  * @param {string} [props.citation]
+ * @param {"ar" | "en"} [props.language] - Detected response language (tutor answers)
  * @param {string} [props.interactionId]
  * @param {"helpful" | "not_helpful" | null} [props.feedback]
  * @param {boolean} [props.showFeedback]
@@ -41,6 +43,7 @@ export function ChatMessage({
     role,
     content,
     citation = null,
+    language = null,
     interactionId = null,
     feedback = null,
     showFeedback = false,
@@ -51,6 +54,11 @@ export function ChatMessage({
 }) {
     const t = useTranslations("Tutor");
     const isStudent = role === "student";
+    const { messageDir, textDir, textClassName } = resolveChatTextLayout({
+        role,
+        language,
+        content
+    });
 
     const [reportOpen, setReportOpen] = useState(false);
     const [reportReason, setReportReason] = useState("incorrect");
@@ -100,6 +108,7 @@ export function ChatMessage({
                     "flex w-full",
                     isStudent ? "justify-end" : "justify-start"
                 )}
+                dir={messageDir}
             >
                 <div
                     className={cn(
@@ -108,11 +117,23 @@ export function ChatMessage({
                             ? "bg-primary text-primary-foreground"
                             : "bg-muted text-foreground"
                     )}
+                    dir={messageDir}
                 >
-                    <p className="whitespace-pre-wrap break-words">{content}</p>
+                    <p
+                        className={cn("whitespace-pre-wrap break-words", textClassName)}
+                        dir={textDir}
+                    >
+                        {content}
+                    </p>
 
                     {!isStudent && citation && (
-                        <div className="mt-3 border-t border-border/60 pt-2 text-xs text-muted-foreground">
+                        <div
+                            className={cn(
+                                "mt-3 border-t border-border/60 pt-2 text-xs text-muted-foreground",
+                                textClassName
+                            )}
+                            dir={textDir}
+                        >
                             <p className="font-medium text-foreground/80">{t("citationLabel")}</p>
                             <p className="mt-1 whitespace-pre-wrap">{citation}</p>
                         </div>
@@ -131,7 +152,7 @@ export function ChatMessage({
                                 </span>
                             )}
 
-                            <div className="ml-auto flex gap-1">
+                            <div className="ms-auto flex gap-1">
                                 {showReport && (
                                     <Button
                                         type="button"

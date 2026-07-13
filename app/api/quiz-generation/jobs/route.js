@@ -6,6 +6,7 @@ import { GenerationJob } from "@/model/generation-job-model";
 import { Quiz } from "@/model/quizv2-model";
 import { extractDocxText, computeContentHash } from "@/service/docx-extractor";
 import { runGenerationJob, rememberExtractedText } from "@/service/generation-orchestrator";
+import { verifyInstructorLessonAccess } from "@/lib/lesson-docx-access";
 import {
     getAdminQuizConfig,
     getUserConsent,
@@ -101,8 +102,11 @@ function serializeGenerationJob(job, extra = {}) {
 /**
  * POST /api/quiz-generation/jobs (contracts §2).
  *
- * Multipart/form-data: file (.docx), courseId, optional lessonId, optional
- * per-type/per-difficulty counts.
+ * Multipart/form-data: optional file (.docx), courseId, optional lessonId,
+ * optional per-type/per-difficulty counts.
+ *
+ * When lessonId is provided and the lesson has stored extractedText, the file
+ * upload is optional — quiz generation uses the lesson's uploaded lecture.
  */
 export async function POST(request) {
     try {
@@ -121,32 +125,14 @@ export async function POST(request) {
             return NextResponse.json({ ok: false, error: "Expected multipart/form-data" }, { status: 400 });
         }
 
-        const file = formData.get("file");
-        if (!(file instanceof Blob) && !(file && typeof file.arrayBuffer === "function")) {
-            return NextResponse.json({ ok: false, error: "Missing file upload" }, { status: 400 });
-        }
-        const filename = file.name || "upload.docx";
-        const lowerName = filename.toLowerCase();
-        const declaredType = file.type || "";
-        // Trust the extension over the (often missing) browser-reported MIME.
-        const isDocxByName = lowerName.endsWith(DOCX_EXTENSION);
-        const isDocxByMime = declaredType === DOCX_MIME_TYPE;
-        if (!isDocxByName && !isDocxByMime) {
-            return NextResponse.json({ ok: false, error: "Only .docx files are supported." }, { status: 400 });
-        }
-
         const courseId = toObjectIdString(formData.get("courseId"));
         if (!courseId) {
             return NextResponse.json({ ok: false, error: "Invalid courseId" }, { status: 400 });
         }
         const lessonId = toObjectIdString(formData.get("lessonId"));
 
-        // spec 002 — targetQuizId triggers MCQ complement mode. When present,
-        // the job is created with jobType="mcq_complement" and the orchestrator
-        // dispatches to runMcqComplementJob. The quiz must exist on this course
-        // and be owned by the instructor (contracts/mcq-complement-api.md §1).
-        const targetQuizId = toObjectIdString(formData.get("targetQuizId"));
-        const isMcqComplement = Boolean(targetQuizId);
+        const fileField = formData.get("file");
+        const hasFile = fileField instanceof Blob || (fileField && typeof fileField.arrayBuffer === "function");
 
         // Course ownership (BOLA). Admin bypasses.
         if (!isAdmin(user)) {
@@ -156,6 +142,63 @@ export async function POST(request) {
                 return NextResponse.json({ ok: false, error: "You do not own this course." }, { status: 403 });
             }
         }
+
+        let lessonExtractedText = null;
+        let lessonSourceFilename = null;
+        let lessonSourceByteSize = null;
+
+        if (lessonId) {
+            const access = await verifyInstructorLessonAccess(lessonId, user.id, user.role);
+            if (!access.allowed) {
+                const status = access.code === "FORBIDDEN" ? 403 : 404;
+                return NextResponse.json({ ok: false, error: access.error }, { status });
+            }
+            if (access.course?._id?.toString() !== courseId) {
+                return NextResponse.json(
+                    { ok: false, error: "Lesson does not belong to this course." },
+                    { status: 400 }
+                );
+            }
+            const text = access.lesson?.extractedText?.trim();
+            if (text) {
+                lessonExtractedText = text;
+                lessonSourceFilename = access.lesson.docxOriginalName || `${lessonId}.docx`;
+                lessonSourceByteSize = access.lesson.docxSize || Buffer.byteLength(text, "utf8");
+            }
+        }
+
+        if (!lessonExtractedText && !hasFile) {
+            if (lessonId) {
+                return NextResponse.json(
+                    { ok: false, error: "Lecture content must be uploaded first." },
+                    { status: 400 }
+                );
+            }
+            return NextResponse.json({ ok: false, error: "Missing file upload" }, { status: 400 });
+        }
+
+        let filename = lessonSourceFilename || "upload.docx";
+        let fileBuffer = null;
+
+        if (!lessonExtractedText) {
+            const file = fileField;
+            filename = file.name || "upload.docx";
+            const lowerName = filename.toLowerCase();
+            const declaredType = file.type || "";
+            const isDocxByName = lowerName.endsWith(DOCX_EXTENSION);
+            const isDocxByMime = declaredType === DOCX_MIME_TYPE;
+            if (!isDocxByName && !isDocxByMime) {
+                return NextResponse.json({ ok: false, error: "Only .docx files are supported." }, { status: 400 });
+            }
+
+            fileBuffer = Buffer.from(await file.arrayBuffer());
+            if (fileBuffer.byteLength === 0) {
+                return NextResponse.json({ ok: false, error: "The uploaded file is empty." }, { status: 400 });
+            }
+        }
+
+        const targetQuizId = toObjectIdString(formData.get("targetQuizId"));
+        const isMcqComplement = Boolean(targetQuizId);
 
         // MCQ complement: validate the target quiz exists on this course and
         // is owned by the instructor (or admin). Done before the admin config
@@ -203,17 +246,15 @@ export async function POST(request) {
         // Admin config (size limit, quota, max questions).
         const config = await getAdminQuizConfig();
 
-        const fileBuffer = Buffer.from(await file.arrayBuffer());
-        if (fileBuffer.byteLength === 0) {
-            return NextResponse.json({ ok: false, error: "The uploaded file is empty." }, { status: 400 });
-        }
-        if (fileBuffer.byteLength > config.maxDocumentSizeBytes) {
+        if (fileBuffer && fileBuffer.byteLength > config.maxDocumentSizeBytes) {
             const maxMB = Math.round(config.maxDocumentSizeBytes / (1024 * 1024));
             return NextResponse.json(
                 { ok: false, error: `File exceeds the maximum size of ${maxMB} MB.` },
                 { status: 413 }
             );
         }
+
+        const sourceByteSize = lessonSourceByteSize ?? fileBuffer?.byteLength ?? 0;
 
         // Consent check
         const consent = await getUserConsent(user.id, AI_CONSENT_VERSION);
@@ -261,7 +302,7 @@ export async function POST(request) {
                     status: "failed",
                     failureReason: "quota_exceeded",
                     sourceFilename: filename,
-                    sourceByteSize: fileBuffer.byteLength,
+                    sourceByteSize: sourceByteSize,
                     sourceContentHash: null,
                     params: paramsResult.params,
                     consentVersion: AI_CONSENT_VERSION
@@ -279,15 +320,20 @@ export async function POST(request) {
             );
         }
 
-        // Extract text
+        // Resolve source text from lesson store or uploaded .docx.
         let extraction;
-        try {
-            extraction = await extractDocxText(fileBuffer);
-        } catch (error) {
-            return NextResponse.json(
-                { ok: false, error: error?.message || "Could not read the .docx file." },
-                { status: 400 }
-            );
+        const fromLessonStoredText = Boolean(lessonExtractedText);
+        if (lessonExtractedText) {
+            extraction = { text: lessonExtractedText, warnings: [] };
+        } else {
+            try {
+                extraction = await extractDocxText(fileBuffer);
+            } catch (error) {
+                return NextResponse.json(
+                    { ok: false, error: error?.message || "Could not read the .docx file." },
+                    { status: 400 }
+                );
+            }
         }
         if (!extraction.text || !extraction.text.trim()) {
             return NextResponse.json(
@@ -327,20 +373,19 @@ export async function POST(request) {
             jobType: isMcqComplement ? "mcq_complement" : "full_quiz",
             status: "queued",
             sourceFilename: filename,
-            sourceByteSize: fileBuffer.byteLength,
+            sourceByteSize: sourceByteSize,
             sourceContentHash: contentHash,
             extractionWarnings: extraction.warnings,
             params: paramsResult.params,
             consentVersion: AI_CONSENT_VERSION
         });
 
-        // Stash the extracted text so the generator does not need to re-extract
-        // from the now discarded upload buffer.
         rememberExtractedText(job._id.toString(), extraction.text);
 
-        // Force direct synchronous execution for local evaluation. This bypasses
-        // Next.js after() and any background queue behavior entirely.
-        const generationResult = await runGenerationJob(job._id.toString());
+        const generationResult = await runGenerationJob(job._id.toString(), {
+            extractedText: extraction.text,
+            fromLessonStoredText
+        });
 
         const completedJob = await GenerationJob.findById(job._id).lean();
         if (!generationResult.ok || completedJob?.status === "failed") {

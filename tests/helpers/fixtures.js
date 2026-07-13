@@ -8,7 +8,6 @@ import { Lesson } from "@/model/lesson.model";
 import { Module } from "@/model/module.model";
 import { AIProcessingConsent } from "@/model/ai-consent-model";
 import { AdminQuizConfig } from "@/model/admin-quiz-config-model";
-import { LectureChunk } from "@/model/lecture-chunk-model";
 import { TutorConfiguration } from "@/model/tutor-config-model";
 import { enrollForCourse } from "@/queries/enrollments";
 import { AI_CONSENT_VERSION, DEFAULT_ADMIN_QUIZ_CONFIG, DEFAULT_TUTOR_CONFIG } from "@/lib/constants";
@@ -59,10 +58,12 @@ export async function seedAdminQuizConfig(overrides = {}) {
 }
 
 // Build a multipart/form-data Request for the jobs upload endpoint.
-// `docxBuffer` is sent as the `file` field with the given filename.
+// `file` is optional when `lessonId` points to a lesson with stored extractedText.
 export function buildJobsUploadRequest({ file, filename = "lecture.docx", courseId, lessonId, params }) {
   const fd = new FormData();
-  fd.append("file", new Blob([file], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }), filename);
+  if (file != null) {
+    fd.append("file", new Blob([file], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" }), filename);
+  }
   fd.append("courseId", courseId);
   if (lessonId) fd.append("lessonId", lessonId);
   if (params) {
@@ -144,23 +145,6 @@ export async function seedModule(courseId, lessonIds = [], overrides = {}) {
 
 export async function seedEnrollment(courseId, studentId) {
   return enrollForCourse(courseId, studentId, "mockpay");
-}
-
-export async function seedLectureChunks(lessonId, courseId, count = 1) {
-  const docs = [];
-  for (let i = 0; i < count; i++) {
-    docs.push({
-      chromaId: `${lessonId}_${i}`,
-      lessonId,
-      courseId,
-      chunkIndex: i,
-      startOffset: i * 100,
-      endOffset: (i + 1) * 100,
-      tokenCount: 50,
-      contentHash: `hash-${i}`
-    });
-  }
-  return LectureChunk.insertMany(docs);
 }
 
 export async function seedTutorConfig(overrides = {}) {

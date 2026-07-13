@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { Separator } from "@/components/ui/separator";
-import VideoDescription from "./_components/video-description";
+import LectureContent from "./_components/lecture-content";
 import { LessonVideoWrapper } from "./_components/lesson-video-wrapper";
 import { AiTutorPanel } from "./_components/ai-tutor-panel";
 import { getCourseDetails } from "@/queries/courses";
@@ -34,7 +34,7 @@ const Course = async ({ params, searchParams }) => {
 	const user = await getLoggedInUser();
 	const enrolled = user ? await hasEnrollmentForCourse(id, user.id) : false;
 	const tutorConfig = await resolveTutorConfig(id);
-	const embedded = lessonPlain ? await hasEmbeddedContent(lessonPlain.id) : false;
+	const embedded = lessonPlain ? await hasEmbeddedContent(lessonPlain.id, id) : false;
 
 	let tutorDisabledReason = null;
 	if (!enrolled) {
@@ -68,7 +68,11 @@ const Course = async ({ params, searchParams }) => {
 			<section className="mt-6 space-y-4" dir="auto">
 				<h1 className="text-2xl font-semibold">{lessonPlain.title}</h1>
 				<Separator />
-				<VideoDescription description={lessonPlain.description} />
+				<LectureContent
+					extractedHtml={lessonPlain.extractedHtml}
+					description={lessonPlain.description}
+					docxFilename={lessonPlain.docxFilename}
+				/>
 			</section>
 
 			{user && (

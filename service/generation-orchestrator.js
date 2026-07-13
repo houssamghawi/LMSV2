@@ -24,6 +24,7 @@
 
 import { dbConnect } from "@/service/mongo";
 import { GenerationJob } from "@/model/generation-job-model";
+import { Lesson } from "@/model/lesson.model";
 import { generateQuizDraft } from "@/service/quiz-generator";
 import { extractDocxText, computeContentHash } from "@/service/docx-extractor";
 import { buildMcqComplementMessages } from "@/lib/mcq-complement-prompt";
@@ -51,6 +52,47 @@ export function forgetExtractedText(jobId) {
 
 export function getRememberedExtractedText(jobId) {
     return jobId ? extractedTextStore.get(jobId.toString()) ?? null : null;
+}
+
+async function loadLessonExtractedText(lessonId) {
+    if (!lessonId) return null;
+    const lesson = await Lesson.findById(lessonId)
+        .select("extractedText docxFilename")
+        .lean();
+    const text = lesson?.extractedText?.trim();
+    return text || null;
+}
+
+/**
+ * Resolve source text for a generation job.
+ * Precedence: explicit options.extractedText > lesson stored text (when
+ * fromLessonStoredText) > in-memory store > re-extract from sourceBuffer >
+ * lesson DB fallback (regeneration after server restart).
+ *
+ * @param {import("mongoose").Document} job
+ * @param {string} jobId
+ * @param {object} [options]
+ * @returns {Promise<string|null>}
+ */
+export async function resolveJobSourceText(job, jobId, options = {}) {
+    if (options.extractedText?.trim()) {
+        return options.extractedText.trim();
+    }
+    if (options.fromLessonStoredText && job.lessonId) {
+        const lessonText = await loadLessonExtractedText(job.lessonId);
+        if (lessonText) return lessonText;
+    }
+    const remembered = getRememberedExtractedText(jobId);
+    if (remembered?.trim()) return remembered.trim();
+    if (options.sourceBuffer) {
+        const extracted = await extractDocxText(options.sourceBuffer);
+        if (extracted.text?.trim()) return extracted.text.trim();
+    }
+    if (job.lessonId) {
+        const lessonText = await loadLessonExtractedText(job.lessonId);
+        if (lessonText) return lessonText;
+    }
+    return null;
 }
 
 /**
@@ -89,13 +131,8 @@ export async function runGenerationJob(jobId, options = {}) {
         job.startedAt = new Date();
         await job.save();
 
-        // Resolve extracted text: explicit arg > remembered store > re-extract.
-        let extractedText = options.extractedText ?? getRememberedText(jobId);
-        if (!extractedText && options.sourceBuffer) {
-            const extracted = await extractDocxText(options.sourceBuffer);
-            extractedText = extracted.text;
-        }
-        if (!extractedText || !extractedText.trim()) {
+        const extractedText = await resolveJobSourceText(job, jobId, options);
+        if (!extractedText) {
             throw Object.assign(new Error("Document has no extractable text."), {
                 code: "EMPTY_DOCUMENT"
             });
@@ -183,13 +220,8 @@ async function runMcqComplementJob(job, options = {}) {
         job.startedAt = new Date();
         await job.save();
 
-        // Resolve extracted text: explicit arg > remembered store > re-extract.
-        let extractedText = options.extractedText ?? getRememberedText(job._id.toString());
-        if (!extractedText && options.sourceBuffer) {
-            const extracted = await extractDocxText(options.sourceBuffer);
-            extractedText = extracted.text;
-        }
-        if (!extractedText || !extractedText.trim()) {
+        const extractedText = await resolveJobSourceText(job, job._id.toString(), options);
+        if (!extractedText) {
             throw Object.assign(new Error("Document has no extractable text."), {
                 code: "EMPTY_DOCUMENT"
             });
@@ -393,9 +425,8 @@ export async function runSingleQuestionRegeneration(jobId, draftId, options = {}
         job.failureReason = null;
         await job.save();
 
-        const extractedText =
-            options.extractedText ?? getRememberedExtractedText(jobId);
-        if (!extractedText || !extractedText.trim()) {
+        const extractedText = await resolveJobSourceText(job, jobId, options);
+        if (!extractedText) {
             throw Object.assign(new Error("Source text is no longer available for regeneration."), {
                 code: "SOURCE_TEXT_UNAVAILABLE"
             });
@@ -508,10 +539,6 @@ function buildSingleQuestionParams(draft) {
     else if (draft.difficulty === "medium") params.mediumCount = 1;
     else if (draft.difficulty === "hard") params.hardCount = 1;
     return params;
-}
-
-function getRememberedText(jobId) {
-    return getRememberedExtractedText(jobId);
 }
 
 function humanizeFailureReason(error) {

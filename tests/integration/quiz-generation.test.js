@@ -20,6 +20,8 @@ import {
   seedCourse,
   seedConsent,
   seedAdminQuizConfig,
+  seedLesson,
+  seedModule,
   buildJobsUploadRequest,
   buildJsonRequest
 } from "../helpers/fixtures.js";
@@ -249,5 +251,50 @@ describe("T016 — quiz generation end-to-end flow", () => {
     expect(job.consentVersion).toBe(AI_CONSENT_VERSION);
     expect(job.sourceContentHash).toMatch(/^[a-f0-9]{64}$/);
     expect(job.sourceFilename).toBe("lecture.docx");
+  });
+});
+
+describe("T028 — quiz generation from lesson stored text (US4)", () => {
+  it("generates from lesson extractedText without a file upload", async () => {
+    const lesson = await seedLesson({
+      docxFilename: `${new mongoose.Types.ObjectId()}.docx`,
+      docxOriginalName: "lecture-upload.docx",
+      docxSize: 4096,
+      extractedText:
+        "Photosynthesis converts light into chemical energy. Plants use it to produce oxygen."
+    });
+    await seedModule(course._id, [lesson._id]);
+
+    const uploadReq = buildJobsUploadRequest({
+      courseId: course._id.toString(),
+      lessonId: lesson._id.toString(),
+      params: DEFAULT_GENERATION_PARAMS
+    });
+    const res = await jobsPost(uploadReq, { params: Promise.resolve({}) });
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.ok).toBe(true);
+    expect(json.status).toBe("succeeded");
+    expect(json.draftQuestions.length).toBeGreaterThan(0);
+
+    const job = await GenerationJob.findById(json.jobId).lean();
+    expect(job.lessonId.toString()).toBe(lesson._id.toString());
+    expect(job.sourceFilename).toBe("lecture-upload.docx");
+  });
+
+  it("returns 400 when lesson has no extractedText and no file is uploaded", async () => {
+    const lesson = await seedLesson();
+    await seedModule(course._id, [lesson._id]);
+
+    const uploadReq = buildJobsUploadRequest({
+      courseId: course._id.toString(),
+      lessonId: lesson._id.toString(),
+      params: DEFAULT_GENERATION_PARAMS
+    });
+    const res = await jobsPost(uploadReq, { params: Promise.resolve({}) });
+    expect(res.status).toBe(400);
+    const json = await res.json();
+    expect(json.ok).toBe(false);
+    expect(json.error).toBe("Lecture content must be uploaded first.");
   });
 });

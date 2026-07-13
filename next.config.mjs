@@ -41,7 +41,7 @@ const nextConfig = {
     serverExternalPackages: ['mongoose', 'chromadb'],
     experimental: {
         serverActions: {
-            bodySizeLimit: '2mb',
+            bodySizeLimit: '25mb',
         },
     },
 };

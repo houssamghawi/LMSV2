@@ -53,10 +53,12 @@ export function LessonEmbeddingStatusLoader({ lessonId, refreshKey = 0 }) {
 
     return (
         <LessonEmbeddingStatus
+            lessonId={lessonId}
             status={status.status}
             chunkCount={status.chunkCount}
             embeddedAt={status.embeddedAt}
             error={status.error}
+            onRetryStarted={loadStatus}
         />
     );
 }

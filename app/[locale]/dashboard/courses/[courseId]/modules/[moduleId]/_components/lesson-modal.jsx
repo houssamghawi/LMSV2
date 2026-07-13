@@ -16,7 +16,7 @@ import { Video } from "lucide-react";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "@/i18n/navigation";
 import { LessonTitleForm } from "./lesson-title-form";
-import { LessonDescriptionForm } from "./lesson-description-form";
+import { LessonDocxUpload } from "./lesson-docx-upload";
 import { LessonEmbeddingStatusLoader } from "./lesson-embedding-status-loader";
 import { LessonAccessForm } from "./lesson-access-form";
 import { VideoUrlForm } from "./video-url-form";
@@ -79,11 +79,15 @@ export const LessonModal = ({ open, setOpen, courseId, lesson, moduleId }) => {
                   courseId={courseId}
                   lessonId={lesson?.id}
                 />
-                <LessonDescriptionForm
-                  initialData={{description: lesson?.description}}
-                  courseId={courseId}
+                <LessonDocxUpload
                   lessonId={lesson?.id}
-                  onSaved={() => setEmbeddingRefreshKey((key) => key + 1)}
+                  initialDocx={{
+                    docxFilename: lesson?.docxFilename,
+                    originalName: lesson?.docxOriginalName,
+                    size: lesson?.docxSize,
+                    embeddingStatus: lesson?.tutorEmbeddingStatus
+                  }}
+                  onUploaded={() => setEmbeddingRefreshKey((key) => key + 1)}
                 />
                 <LessonEmbeddingStatusLoader
                   lessonId={lesson?.id}
