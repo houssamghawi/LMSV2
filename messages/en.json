@@ -1205,5 +1205,212 @@
     "paginationPrev": "Previous",
     "paginationNext": "Next",
     "paginationPageOf": "Page {page} / {totalPages}"
+  },
+  "Analytics": {
+    "title": "Analytics",
+    "adminTitle": "Platform analytics",
+    "instructorTitle": "Course analytics",
+    "subtitle": "Insights for the selected date range.",
+    "navLabel": "Analytics",
+    "sections": {
+      "overview": "Overview",
+      "users": "Users",
+      "courses": "Courses",
+      "revenue": "Revenue",
+      "performance": "Performance",
+      "projections": "Projections",
+      "students": "Students",
+      "activity": "Activity",
+      "earnings": "Earnings"
+    },
+    "metrics": {
+      "totalCourses": "Total courses",
+      "publishedCourses": "Published",
+      "draftCourses": "Draft",
+      "avgEnrollments": "Avg enrollments",
+      "totalUsers": "Total users",
+      "totalInstructors": "Instructors",
+      "totalStudents": "Students",
+      "totalAdmins": "Admins",
+      "totalRevenue": "Total revenue",
+      "totalEnrollments": "Total enrollments",
+      "activeUsers": "Active users",
+      "newRegistrations": "New registrations",
+      "completionRate": "Completion rate",
+      "averageProgress": "Average progress",
+      "successRate": "Payment success rate",
+      "averageTransaction": "Average transaction",
+      "transactions": "Transactions",
+      "activeStudents": "Active students",
+      "inactiveStudents": "Inactive students",
+      "avgSessionDuration": "Avg session duration",
+      "inactive7d": "Inactive (7 days)",
+      "inactive30d": "Inactive (30 days)",
+      "avgResponseTime": "Avg response time",
+      "p95ResponseTime": "p95 response time",
+      "errorRate": "Error rate",
+      "uptime": "Uptime",
+      "totalEarnings": "Total earnings",
+      "avgPerStudent": "Avg per student"
+    },
+    "dateRange": {
+      "label": "Date range",
+      "last7Days": "Last 7 days",
+      "last30Days": "Last 30 days",
+      "last90Days": "Last 90 days",
+      "custom": "Custom range",
+      "from": "From",
+      "to": "To",
+      "apply": "Apply",
+      "comparePrevious": "Compared to previous period",
+      "maxRangeHint": "Maximum range is 24 months.",
+      "invalidRange": "Please select a valid date range."
+    },
+    "granularity": {
+      "day": "Daily",
+      "week": "Weekly",
+      "month": "Monthly"
+    },
+    "trends": {
+      "up": "Up {percent}%",
+      "down": "Down {percent}%",
+      "stable": "No change",
+      "vsPrevious": "vs previous period"
+    },
+    "empty": {
+      "noData": "No data for this date range.",
+      "noCourses": "No courses to display.",
+      "noUsers": "No user activity in this period.",
+      "noRevenue": "No revenue recorded for this period.",
+      "noEnrollments": "No enrollments in this period.",
+      "noStudents": "No students enrolled yet.",
+      "noActivity": "No activity recorded for this period.",
+      "noInactiveStudents": "No inactive students in this window.",
+      "projectionsUnavailable": "Projections need at least 90 days of history.",
+      "chartEmpty": "Nothing to chart yet."
+    },
+    "anomalies": {
+      "title": "Anomalies",
+      "critical": "Critical",
+      "warning": "Warning",
+      "info": "Info",
+      "revenueDrop": "Revenue dropped more than {percent}% vs the previous period.",
+      "errorRateSpike": "Error rate increased by more than {percent}%.",
+      "registrationDrop": "Registrations dropped more than {percent}% vs the previous period.",
+      "activeUserDecline": "Active users declined more than {percent}% vs the previous period.",
+      "activitySpike": "Activity spiked more than {percent}% above the rolling average.",
+      "viewDetails": "View details"
+    },
+    "export": {
+      "title": "Export",
+      "csv": "Export CSV",
+      "exporting": "Preparing export…",
+      "success": "Export ready. Download started.",
+      "failed": "Export failed. Please try again.",
+      "tooLarge": "Export exceeds the maximum row limit. Narrow the date range.",
+      "includeArchived": "Include archived data",
+      "scopeLabel": "Export scope"
+    },
+    "charts": {
+      "registrationTrend": "Registration trend",
+      "activeUsersTrend": "Active users trend",
+      "roleDistribution": "Users by role",
+      "activityByHour": "Activity by hour",
+      "activityByDay": "Activity by day",
+      "activityTrend": "Login activity trend",
+      "responseTrend": "Response time trend",
+      "errorTrend": "Error rate trend",
+      "errorsByType": "Errors by type",
+      "earningsTrend": "Earnings trend",
+      "earningsByCourse": "Earnings by course",
+      "projections": "{metric} projections",
+      "revenueTrend": "Revenue trend",
+      "revenueByCourse": "Revenue by course",
+      "revenueByInstructor": "Revenue by instructor",
+      "enrollmentTrend": "Enrollment trend",
+      "completionTrend": "Completion trend",
+      "categoryDistribution": "Courses by category",
+      "topCourses": "Top courses",
+      "studentProgress": "Student progress",
+      "loading": "Loading chart…",
+      "ariaLabel": "{title} chart"
+    },
+    "table": {
+      "student": "Student",
+      "course": "Course",
+      "instructor": "Instructor",
+      "enrolled": "Enrolled",
+      "progress": "Progress",
+      "lastActivity": "Last activity",
+      "lastLogin": "Last login",
+      "revenue": "Revenue",
+      "enrollments": "Enrollments",
+      "status": "Status",
+      "actions": "Actions",
+      "noRows": "No rows to display."
+    },
+    "errors": {
+      "loadFailed": "Failed to load analytics. Please try again.",
+      "unauthorized": "You do not have access to this analytics view.",
+      "forbiddenCourse": "You can only view analytics for your own courses."
+    },
+    "mobile": {
+      "summaryTitle": "Key metrics",
+      "summaryHint": "Open on a larger screen for full charts and tables."
+    },
+    "progressStatus": {
+      "all": "All",
+      "not-started": "Not started",
+      "in-progress": "In progress",
+      "near-completion": "Near completion",
+      "completed": "Completed"
+    },
+    "activity": {
+      "allCourses": "All courses"
+    },
+    "performance": {
+      "estimatedNotice": "These figures are estimated placeholders — no APM or request log is configured yet. Values are labeled for dashboard preview only."
+    },
+    "settings": {
+      "title": "Customize dashboard",
+      "hint": "Show or hide sections, reorder tabs, and set your default date range.",
+      "widgets": "Sections",
+      "defaultRange": "Default date range",
+      "save": "Save",
+      "cancel": "Cancel",
+      "saved": "Preferences saved.",
+      "saveFailed": "Could not save preferences.",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "noWidgets": "All sections are hidden. Open Customize dashboard to show some again."
+    },
+    "projections": {
+      "metric": "Metric",
+      "horizon": "Forecast horizon",
+      "horizonDays": "{days} days",
+      "actualDays": "Available history: {actual} days (need {required}).",
+      "rSquared": "R² {value}",
+      "historyDays": "{days} days of history",
+      "lowConfidenceHint": "Low confidence — the trend fit is weak (R² below 0.5). Treat forecasts as directional only.",
+      "confidence": {
+        "high": "High confidence",
+        "medium": "Medium confidence",
+        "low": "Low confidence"
+      },
+      "metrics": {
+        "users": "Users",
+        "revenue": "Revenue",
+        "enrollments": "Enrollments"
+      },
+      "series": {
+        "historical": "Historical",
+        "baseline": "Baseline",
+        "optimistic": "Optimistic",
+        "conservative": "Conservative"
+      }
+    },
+    "quizAverage": "Quiz avg: {value}%",
+    "paginationPrev": "Previous",
+    "paginationNext": "Next"
   }
 }

@@ -1,0 +1,72 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#ffffff",
+    "primaryTextColor": "#000000",
+    "primaryBorderColor": "#000000",
+    "lineColor": "#000000",
+    "secondaryColor": "#f4f4f4",
+    "fontFamily": "Times New Roman",
+    "fontSize": "14px"
+  }
+}}%%
+%% IEEE-style Architecture Block Diagram — LMSV2
+%% Blocks verified against source (no invented modules)
+
+flowchart TB
+  subgraph ACTORS["Actors"]
+    ST["Student<br/>Browser · role: student"]
+    IN["Instructor<br/>Browser · role: instructor"]
+    AD["Administrator<br/>Browser · role: admin"]
+  end
+
+  subgraph L1["L1 Presentation — app/[locale]"]
+    SUI["Student UI<br/>app/[locale]/(main)<br/>courses · lessons · quizzes · account"]
+    IUI["Instructor UI<br/>app/[locale]/dashboard<br/>courses · quizzes · grading · analytics"]
+    AUI["Admin UI<br/>app/[locale]/admin<br/>users · payments · analytics · settings"]
+    I18N["i18n Shell<br/>i18n/routing.js · next-intl<br/>en · ar"]
+  end
+
+  subgraph L2["L2 Application / Edge"]
+    MW["Edge Middleware<br/>middleware.js · auth-edge.js<br/>RBAC · security-headers.js"]
+    SA["Server Actions<br/>app/actions/*<br/>course · module · lesson · quizv2 · admin"]
+    API["API Route Handlers<br/>app/api/*<br/>upload · tutor · quiz-generation · analytics"]
+    AUTH["Authentication Module<br/>auth.js · auth.config.js<br/>Credentials · JWT · bcryptjs"]
+  end
+
+  subgraph L3["L3 Cross-Cutting — lib/"]
+    AUTHZ["Authorization and RBAC<br/>authorization.js · permissions.js · auth-helpers.js"]
+    VAL["Validation and Security<br/>validations.js · rate-limit.js · sanitize-html.js"]
+    UTIL["Shared Utilities<br/>constants.js · logger.js · errors.js · routes.js"]
+  end
+
+  subgraph L4["L4 Business Services — service/"]
+    QUIZ["AI Quiz Pipeline<br/>generation-orchestrator.js<br/>quiz-generator.js · mcq-validator.js<br/>docx-extractor.js · docx-validator.js"]
+    RAG["AI RAG Tutor Pipeline<br/>ai-tutor.js · lecture-embedder.js<br/>vector-store.js"]
+    ANAL["Analytics Services<br/>admin-analytics · instructor-analytics<br/>export · projection · anomaly-detection"]
+    MONGO["Persistence Gateway<br/>mongo.js"]
+  end
+
+  subgraph L5["L5 Data Access — queries/ · model/"]
+    QRY["Query Modules<br/>queries/* · queries/analytics/*"]
+    MDL["Mongoose Models — 22<br/>model/*.js"]
+  end
+
+  subgraph L6["L6 Persistence and External"]
+    MDB[("MongoDB")]
+    FS[("Local FS<br/>uploads/ · public/uploads/")]
+    CHR[("ChromaDB<br/>lms_course_{id}")]
+    GEM["Google Gemini API<br/>@google/genai"]
+    MOCK["MockPay<br/>app/api/payments/mock"]
+  end
+
+  ACTORS --> L1
+  L1 --> L2
+  L2 --> L3
+  L3 --> L4
+  L4 --> L5
+  L5 --> L6
+
+  classDef box fill:#fff,stroke:#000,color:#000,stroke-width:1.5px;
+  class ST,IN,AD,SUI,IUI,AUI,I18N,MW,SA,API,AUTH,AUTHZ,VAL,UTIL,QUIZ,RAG,ANAL,MONGO,QRY,MDL,GEM,MOCK box;
+  class MDB,FS,CHR box;

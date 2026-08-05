@@ -75,7 +75,7 @@ export const {
                         return null;
                     }
 
-                    // Update lastLogin timestamp
+                    // Update lastLogin timestamp and record analytics activity
                     try {
                         await User.findByIdAndUpdate(user._id, { 
                             lastLogin: new Date() 
@@ -83,6 +83,16 @@ export const {
                     } catch (updateError) {
                         // Log but don't fail login if lastLogin update fails
                         console.error('Failed to update lastLogin:', updateError);
+                    }
+
+                    try {
+                        const { recordUserActivity } = await import("./lib/analytics/activity-log");
+                        await recordUserActivity({
+                            userId: user._id.toString(),
+                            action: "login",
+                        });
+                    } catch (activityError) {
+                        console.error('Failed to record login activity:', activityError);
                     }
                     
                     // Return user data for session
@@ -102,5 +112,22 @@ export const {
                 }  
             }
         })
-    ]
+    ],
+    events: {
+        async signOut(message) {
+            try {
+                const token = message?.token;
+                const userId = token?.id;
+                if (!userId) return;
+
+                const { recordUserActivity } = await import("./lib/analytics/activity-log");
+                await recordUserActivity({
+                    userId: String(userId),
+                    action: "logout",
+                });
+            } catch (activityError) {
+                console.error('Failed to record logout activity:', activityError);
+            }
+        },
+    },
 })

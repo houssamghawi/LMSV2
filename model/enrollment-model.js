@@ -37,7 +37,13 @@ const enrollmentSchema = new Schema({
     payment: {
         type: Schema.ObjectId,
         ref: "Payment"
-    }
+    },
+    /** Soft-archive marker (FR-022). null/missing = included in standard analytics. */
+    archivedAt: {
+        type: Date,
+        required: false,
+        default: null,
+    },
 });
 
 // Unique constraint: one enrollment per student per course

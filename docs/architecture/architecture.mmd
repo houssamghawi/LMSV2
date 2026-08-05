@@ -1,0 +1,116 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#ffffff",
+    "primaryTextColor": "#000000",
+    "primaryBorderColor": "#000000",
+    "lineColor": "#000000",
+    "secondaryColor": "#f5f5f5",
+    "tertiaryColor": "#ffffff",
+    "fontFamily": "Times New Roman, Times, serif",
+    "fontSize": "14px"
+  }
+}}%%
+%% LMS Container Architecture (C4 Level 2)
+%% Reverse-engineered from LMSV2-main source — Modular Monolith / Layered
+%% Do not render decorative styling beyond black borders on white.
+
+flowchart TB
+  %% ===== Actors =====
+  subgraph ACTORS["Actors"]
+    ST["Student<br/>(Browser)"]
+    IN["Instructor<br/>(Browser)"]
+    AD["Administrator<br/>(Browser)"]
+  end
+
+  %% ===== Presentation =====
+  subgraph PRES["Presentation Layer — app/[locale]"]
+    SUI["Student UI<br/>(main): courses, lessons,<br/>quizzes, account, checkout"]
+    IUI["Instructor UI<br/>dashboard: courses, quizzes,<br/>grading, analytics, lives"]
+    AUI["Admin UI<br/>admin: users, courses,<br/>payments, analytics, settings"]
+  end
+
+  %% ===== Application =====
+  subgraph APP["Application Layer"]
+    MW["middleware.js<br/>Auth.js Edge · next-intl en/ar<br/>RBAC · security headers"]
+    SA["Server Actions<br/>app/actions/*"]
+    API["API Route Handlers<br/>app/api/*"]
+    AUTH["Auth Module<br/>auth.js · auth.config.js<br/>Credentials · JWT · bcrypt"]
+  end
+
+  %% ===== Business =====
+  subgraph BIZ["Business Layer — service/"]
+    QG["AI Quiz Pipeline<br/>generation-orchestrator<br/>quiz-generator · mcq-validator<br/>docx-extractor · docx-validator"]
+    RAG["AI RAG Tutor Pipeline<br/>ai-tutor · lecture-embedder<br/>vector-store"]
+    AN["Analytics Services<br/>admin / instructor<br/>export · projection · anomaly"]
+    MONGO_SVC["mongo.js<br/>Mongoose connection"]
+  end
+
+  %% ===== Data Access =====
+  subgraph DAL["Data Access Layer"]
+    QRY["queries/* · queries/analytics/*"]
+    MDL["Mongoose Models — model/*<br/>User Course Module Lesson Quiz<br/>Question Attempt Enrollment Payment<br/>GenerationJob TutorInteraction …"]
+  end
+
+  %% ===== Persistence =====
+  subgraph STORE["Persistence"]
+    MDB[("MongoDB")]
+    FS[("Local Filesystem<br/>uploads/ · public/uploads/")]
+    CHR[("ChromaDB<br/>lms_course_{courseId}")]
+  end
+
+  %% ===== External =====
+  subgraph EXT["External Systems"]
+    GEM["Google Gemini API<br/>generateContent · embedContent"]
+    MOCK["MockPay<br/>/api/payments/mock"]
+  end
+
+  %% Request / response
+  ST --> MW
+  IN --> MW
+  AD --> MW
+  MW --> SUI
+  MW --> IUI
+  MW --> AUI
+  SUI --> SA
+  SUI --> API
+  IUI --> SA
+  IUI --> API
+  AUI --> SA
+  AUI --> API
+
+  %% Auth
+  API --> AUTH
+  SA --> AUTH
+  MW -.-> AUTH
+  AUTH --> QRY
+
+  %% Business wiring
+  API --> QG
+  API --> RAG
+  API --> AN
+  SA --> QRY
+  API --> QRY
+  QG --> MONGO_SVC
+  RAG --> MONGO_SVC
+  AN --> QRY
+  QRY --> MDL
+  MDL --> MONGO_SVC
+  MONGO_SVC --> MDB
+
+  %% AI
+  QG -->|"quiz generation"| GEM
+  RAG -->|"embeddings + answers"| GEM
+  RAG -->|"upsert / query chunks"| CHR
+
+  %% Files
+  API -->|"video · docx · images"| FS
+
+  %% Payments
+  API --> MOCK
+  MOCK --> QRY
+
+  classDef box fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1.5px;
+  classDef cyl fill:#ffffff,stroke:#000000,color:#000000,stroke-width:1.5px;
+  class ST,IN,AD,SUI,IUI,AUI,MW,SA,API,AUTH,QG,RAG,AN,MONGO_SVC,QRY,MDL,GEM,MOCK box;
+  class MDB,FS,CHR cyl;

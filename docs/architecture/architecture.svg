@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="5600" height="3600" viewBox="0 0 5600 3600">
+<rect width="5600" height="3600" fill="#FFFFFF"/>
+<text x="2800.0" y="48" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="40" font-weight="bold" fill="#000000">Software Architecture Block Diagram</text>
+<text x="2800.0" y="88" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="24" fill="#000000">LMSV2 — Modular Monolith · Layered Architecture (Next.js 15 App Router)</text>
+<text x="2800.0" y="118" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="16" fill="#000000">IEEE 1016 style · Blocks named from verified source paths · No invented modules</text>
+<defs>
+<marker id="arr" markerWidth="12" markerHeight="10" refX="10" refY="5" orient="auto"><path d="M0,0 L12,5 L0,10 Z" fill="#000000"/></marker>
+</defs>
+<rect x="100" y="140" width="5400" height="160" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+<text x="120" y="168" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">ACTORS</text>
+<rect x="124.0" y="190" width="1765.3333333333333" height="90" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="124.0" y="190" width="1765.3333333333333" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="1006.6666666666666" y="217" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Student</text>
+<text x="1006.6666666666666" y="260" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">Browser client</text>
+<text x="1006.6666666666666" y="288" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">Role: student</text>
+<rect x="1917.3333333333333" y="190" width="1765.3333333333333" height="90" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="1917.3333333333333" y="190" width="1765.3333333333333" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="2800.0" y="217" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Instructor</text>
+<text x="2800.0" y="260" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">Browser client</text>
+<text x="2800.0" y="288" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">Role: instructor</text>
+<rect x="3710.6666666666665" y="190" width="1765.3333333333333" height="90" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="3710.6666666666665" y="190" width="1765.3333333333333" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="4593.333333333333" y="217" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Administrator</text>
+<text x="4593.333333333333" y="260" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">Browser client</text>
+<text x="4593.333333333333" y="288" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">Role: admin</text>
+<rect x="100" y="340" width="5400" height="420" fill="#F4F4F4" stroke="#000000" stroke-width="2"/>
+<text x="120" y="368" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">L1  PRESENTATION LAYER  —  app/[locale]</text>
+<rect x="124.0" y="390" width="1317.0" height="350" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="124.0" y="390" width="1317.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="782.5" y="417" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Student UI</text>
+<text x="782.5" y="460" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">app/[locale]/(main)</text>
+<text x="782.5" y="488" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">courses · lessons · quizzes</text>
+<text x="782.5" y="516" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">account · checkout/mock</text>
+<text x="782.5" y="544" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">enroll-success · categories</text>
+<rect x="1469.0" y="390" width="1317.0" height="350" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="1469.0" y="390" width="1317.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="2127.5" y="417" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Instructor UI</text>
+<text x="2127.5" y="460" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">app/[locale]/dashboard</text>
+<text x="2127.5" y="488" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">courses · modules · lessons</text>
+<text x="2127.5" y="516" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">quizzes · grading · lives</text>
+<text x="2127.5" y="544" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">analytics · tutor-analytics</text>
+<rect x="2814.0" y="390" width="1317.0" height="350" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="2814.0" y="390" width="1317.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="3472.5" y="417" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Admin UI</text>
+<text x="3472.5" y="460" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">app/[locale]/admin</text>
+<text x="3472.5" y="488" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">users · courses · categories</text>
+<text x="3472.5" y="516" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">enrollments · payments · reviews</text>
+<text x="3472.5" y="544" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">analytics · quiz-settings · tutor-settings</text>
+<rect x="4159.0" y="390" width="1317.0" height="350" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="4159.0" y="390" width="1317.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="4817.5" y="417" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">i18n Shell</text>
+<text x="4817.5" y="460" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">i18n/routing.js</text>
+<text x="4817.5" y="488" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">next-intl</text>
+<text x="4817.5" y="516" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">locales: en · ar</text>
+<text x="4817.5" y="544" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">messages/en.json · ar.json</text>
+<rect x="100" y="800" width="5400" height="420" fill="#F4F4F4" stroke="#000000" stroke-width="2"/>
+<text x="120" y="828" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">L2  APPLICATION / EDGE LAYER</text>
+<rect x="124.0" y="850" width="1317.0" height="350" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="124.0" y="850" width="1317.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="782.5" y="877" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Edge Middleware</text>
+<text x="782.5" y="920" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">middleware.js</text>
+<text x="782.5" y="948" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">auth-edge.js session</text>
+<text x="782.5" y="976" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">RBAC /admin · /dashboard</text>
+<text x="782.5" y="1004" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">security-headers.js</text>
+<rect x="1469.0" y="850" width="1317.0" height="350" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="1469.0" y="850" width="1317.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="2127.5" y="877" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Server Actions</text>
+<text x="2127.5" y="920" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">app/actions/*</text>
+<text x="2127.5" y="948" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">course · module · lesson</text>
+<text x="2127.5" y="976" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">quizv2 · enrollment · review</text>
+<text x="2127.5" y="1004" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">admin · account · admin-setup</text>
+<rect x="2814.0" y="850" width="1317.0" height="350" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="2814.0" y="850" width="1317.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="3472.5" y="877" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">API Route Handlers</text>
+<text x="3472.5" y="920" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">app/api/*</text>
+<text x="3472.5" y="948" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">auth · register · me · upload</text>
+<text x="3472.5" y="976" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">tutor · quiz-generation</text>
+<text x="3472.5" y="1004" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">analytics · payments · certificates</text>
+<text x="3472.5" y="1032" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">videos · lesson-watch · lesson-images</text>
+<rect x="4159.0" y="850" width="1317.0" height="350" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="4159.0" y="850" width="1317.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="4817.5" y="877" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Authentication Module</text>
+<text x="4817.5" y="920" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">auth.js · auth.config.js</text>
+<text x="4817.5" y="948" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">NextAuth v5 Credentials</text>
+<text x="4817.5" y="976" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">JWT session · bcryptjs</text>
+<text x="4817.5" y="1004" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">app/api/auth/[...nextauth]</text>
+<rect x="100" y="1260" width="5400" height="220" fill="#F4F4F4" stroke="#000000" stroke-width="2"/>
+<text x="120" y="1288" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">L3  CROSS-CUTTING CONCERNS  —  lib/</text>
+<rect x="124.0" y="1310" width="1765.3333333333333" height="150" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="124.0" y="1310" width="1765.3333333333333" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="1006.6666666666666" y="1337" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Authorization &amp; RBAC</text>
+<text x="1006.6666666666666" y="1380" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">authorization.js</text>
+<text x="1006.6666666666666" y="1408" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">permissions.js</text>
+<text x="1006.6666666666666" y="1436" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">auth-helpers.js</text>
+<text x="1006.6666666666666" y="1464" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">auth-redirect.js</text>
+<rect x="1917.3333333333333" y="1310" width="1765.3333333333333" height="150" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="1917.3333333333333" y="1310" width="1765.3333333333333" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="2800.0" y="1337" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Validation &amp; Security</text>
+<text x="2800.0" y="1380" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">validations.js · Zod</text>
+<text x="2800.0" y="1408" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">rate-limit.js</text>
+<text x="2800.0" y="1436" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">security-headers.js</text>
+<text x="2800.0" y="1464" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">sanitize-html.js</text>
+<rect x="3710.6666666666665" y="1310" width="1765.3333333333333" height="150" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="3710.6666666666665" y="1310" width="1765.3333333333333" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="4593.333333333333" y="1337" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Shared Utilities</text>
+<text x="4593.333333333333" y="1380" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">constants.js</text>
+<text x="4593.333333333333" y="1408" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">logger.js</text>
+<text x="4593.333333333333" y="1436" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">errors.js</text>
+<text x="4593.333333333333" y="1464" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">action-wrapper.js</text>
+<text x="4593.333333333333" y="1492" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">routes.js</text>
+<rect x="100" y="1520" width="5400" height="480" fill="#F4F4F4" stroke="#000000" stroke-width="2"/>
+<text x="120" y="1548" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">L4  BUSINESS SERVICES  —  service/</text>
+<rect x="124.0" y="1570" width="1317.0" height="410" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="124.0" y="1570" width="1317.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="782.5" y="1597" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">AI Quiz Pipeline</text>
+<text x="782.5" y="1640" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">generation-orchestrator.js</text>
+<text x="782.5" y="1668" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">quiz-generator.js</text>
+<text x="782.5" y="1696" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">mcq-validator.js</text>
+<text x="782.5" y="1724" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">docx-extractor.js</text>
+<text x="782.5" y="1752" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">docx-validator.js</text>
+<rect x="1469.0" y="1570" width="1317.0" height="410" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="1469.0" y="1570" width="1317.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="2127.5" y="1597" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">AI RAG Tutor Pipeline</text>
+<text x="2127.5" y="1640" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">ai-tutor.js</text>
+<text x="2127.5" y="1668" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">lecture-embedder.js</text>
+<text x="2127.5" y="1696" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">vector-store.js</text>
+<text x="2127.5" y="1724" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">Chroma client</text>
+<text x="2127.5" y="1752" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">Gemini embed + generate</text>
+<rect x="2814.0" y="1570" width="1317.0" height="410" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="2814.0" y="1570" width="1317.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="3472.5" y="1597" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Analytics Services</text>
+<text x="3472.5" y="1640" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">analytics/admin-analytics.service.ts</text>
+<text x="3472.5" y="1668" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">analytics/instructor-analytics.service.ts</text>
+<text x="3472.5" y="1696" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">analytics/export.service.ts</text>
+<text x="3472.5" y="1724" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">analytics/projection.service.ts</text>
+<text x="3472.5" y="1752" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">anomaly-detection · dashboard-preference</text>
+<rect x="4159.0" y="1570" width="1317.0" height="410" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="4159.0" y="1570" width="1317.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="4817.5" y="1597" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Persistence Gateway</text>
+<text x="4817.5" y="1640" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">mongo.js</text>
+<text x="4817.5" y="1668" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">mongoose.connect cache</text>
+<text x="4817.5" y="1696" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">optional transactions</text>
+<rect x="100" y="2040" width="5400" height="360" fill="#F4F4F4" stroke="#000000" stroke-width="2"/>
+<text x="120" y="2068" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">L5  DATA ACCESS LAYER  —  queries/ · model/</text>
+<rect x="124.0" y="2090" width="2662.0" height="290" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="124.0" y="2090" width="2662.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="1455.0" y="2117" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Query Modules</text>
+<text x="1455.0" y="2160" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">queries/courses · users · lessons</text>
+<text x="1455.0" y="2188" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">enrollments · payments · quizv2</text>
+<text x="1455.0" y="2216" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">quiz-generation · tutor-interactions</text>
+<text x="1455.0" y="2244" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">queries/analytics/* aggregations</text>
+<text x="1455.0" y="2272" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">admin · reports · testimonials</text>
+<rect x="2814.0" y="2090" width="2662.0" height="290" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="2814.0" y="2090" width="2662.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="4145.0" y="2117" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Mongoose Models (22)</text>
+<text x="4145.0" y="2160" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">User · Course · Module · Lesson · Category</text>
+<text x="4145.0" y="2188" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">Enrollment · Payment · Watch · Report</text>
+<text x="4145.0" y="2216" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">Quiz · Question · Attempt · Assessment</text>
+<text x="4145.0" y="2244" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">GenerationJob · TutorInteraction · …</text>
+<text x="4145.0" y="2272" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">model/*.js</text>
+<rect x="100" y="2440" width="5400" height="360" fill="#F4F4F4" stroke="#000000" stroke-width="2"/>
+<text x="120" y="2468" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">L6  PERSISTENCE &amp; EXTERNAL SYSTEMS</text>
+<rect x="124.0" y="2490" width="1048.0" height="290" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="124.0" y="2490" width="1048.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="648.0" y="2517" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">MongoDB</text>
+<text x="648.0" y="2560" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">Primary document store</text>
+<text x="648.0" y="2588" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">MONGODB_CONNECTION_STRING</text>
+<text x="648.0" y="2616" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">via service/mongo.js</text>
+<rect x="1200.0" y="2490" width="1048.0" height="290" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="1200.0" y="2490" width="1048.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="1724.0" y="2517" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Local Filesystem</text>
+<text x="1724.0" y="2560" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">uploads/videos</text>
+<text x="1724.0" y="2588" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">uploads/lessons</text>
+<text x="1724.0" y="2616" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">uploads/lesson-images</text>
+<text x="1724.0" y="2644" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">public/uploads</text>
+<rect x="2276.0" y="2490" width="1048.0" height="290" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="2276.0" y="2490" width="1048.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="2800.0" y="2517" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">ChromaDB</text>
+<text x="2800.0" y="2560" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">Vector store</text>
+<text x="2800.0" y="2588" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">lms_course_{courseId}</text>
+<text x="2800.0" y="2616" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">CHROMA_URL · .chroma-data</text>
+<rect x="3352.0" y="2490" width="1048.0" height="290" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="3352.0" y="2490" width="1048.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="3876.0" y="2517" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Google Gemini API</text>
+<text x="3876.0" y="2560" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">@google/genai</text>
+<text x="3876.0" y="2588" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">generateContent</text>
+<text x="3876.0" y="2616" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">embedContent</text>
+<text x="3876.0" y="2644" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">GEMINI_API_KEY</text>
+<rect x="4428.0" y="2490" width="1048.0" height="290" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="4428.0" y="2490" width="1048.0" height="40" fill="#E8E8E8" stroke="#000000" stroke-width="2"/>
+<text x="4952.0" y="2517" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">MockPay</text>
+<text x="4952.0" y="2560" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">app/api/payments/mock</text>
+<text x="4952.0" y="2588" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">confirm · status</text>
+<text x="4952.0" y="2616" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">Enrollment + Payment write</text>
+<line x1="2800.0" y1="302" x2="2800.0" y2="336" stroke="#000000" stroke-width="2" marker-end="url(#arr)"/>
+<line x1="2800.0" y1="762" x2="2800.0" y2="796" stroke="#000000" stroke-width="2" marker-end="url(#arr)"/>
+<line x1="2800.0" y1="1222" x2="2800.0" y2="1256" stroke="#000000" stroke-width="2" marker-end="url(#arr)"/>
+<line x1="2800.0" y1="1482" x2="2800.0" y2="1516" stroke="#000000" stroke-width="2" marker-end="url(#arr)"/>
+<line x1="2800.0" y1="2002" x2="2800.0" y2="2036" stroke="#000000" stroke-width="2" marker-end="url(#arr)"/>
+<line x1="2800.0" y1="2402" x2="2800.0" y2="2436" stroke="#000000" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="100" y="2860" width="5400" height="360" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+<text x="120" y="2895" font-family="Times New Roman, Times, serif" font-size="20" font-weight="bold" fill="#000000">Communication Notes (from source)</text>
+<text x="130" y="2800" font-family="Times New Roman, Times, serif" font-size="16" fill="#000000">Request flow: Browser → middleware.js → UI / Server Actions / API Routes</text>
+<text x="130" y="2920" font-family="Times New Roman, Times, serif" font-size="16" fill="#000000">Auth flow: Credentials → auth.js → User (bcrypt) → JWT</text>
+<text x="130" y="3040" font-family="Times New Roman, Times, serif" font-size="16" fill="#000000">AI Quiz: DOCX → docx-* → generation-orchestrator → quiz-generator → Gemini</text>
+<text x="130" y="3160" font-family="Times New Roman, Times, serif" font-size="16" fill="#000000">RAG: lecture-embedder → Gemini embed → ChromaDB → ai-tutor → Gemini generate</text>
+<text x="130" y="3280" font-family="Times New Roman, Times, serif" font-size="16" fill="#000000">Excluded (no runtime wiring): Resend · Stripe SDK · OAuth providers</text>
+<text x="5500" y="3560" text-anchor="end" font-family="Times New Roman, Times, serif" font-size="15" fill="#000000">Pattern: Modular Monolith + Layered Architecture · Verified 2026-07-24</text>
+</svg>

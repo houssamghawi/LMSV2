@@ -1,0 +1,136 @@
+<mxfile host="app.diagrams.net" modified="2026-07-24T00:00:00.000Z" agent="LMSV2-block" version="22.1.0" type="device">
+  <diagram id="lms-arch-block" name="Architecture Block Diagram">
+    <mxGraphModel dx="1600" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="Software Architecture Block Diagram — LMSV2&#xa;Modular Monolith · Layered Architecture (Next.js 15) · Verified source names only" style="text;html=1;align=center;fontFamily=Times New Roman;fontSize=16;fontStyle=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="200" y="20" width="1200" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Actors -->
+        <mxCell id="band0" value="ACTORS" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontFamily=Times New Roman;fontSize=11;fontStyle=1;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="80" width="1480" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="st" value="Student&#xa;Browser · student" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=11;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="200" y="105" width="300" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="in" value="Instructor&#xa;Browser · instructor" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=11;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="650" y="105" width="300" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="ad" value="Administrator&#xa;Browser · admin" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=11;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="105" width="300" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- L1 -->
+        <mxCell id="band1" value="L1 PRESENTATION — app/[locale]" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontFamily=Times New Roman;fontSize=11;fontStyle=1;fillColor=#F4F4F4;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="190" width="1480" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="sui" value="Student UI&#xa;app/[locale]/(main)&#xa;courses · lessons · quizzes · account" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="90" y="225" width="320" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="iui" value="Instructor UI&#xa;app/[locale]/dashboard&#xa;courses · quizzes · grading · analytics" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="440" y="225" width="320" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="aui" value="Admin UI&#xa;app/[locale]/admin&#xa;users · payments · analytics · settings" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="790" y="225" width="320" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="i18n" value="i18n Shell&#xa;i18n/routing.js · next-intl&#xa;locales: en · ar" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="225" width="360" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- L2 -->
+        <mxCell id="band2" value="L2 APPLICATION / EDGE" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontFamily=Times New Roman;fontSize=11;fontStyle=1;fillColor=#F4F4F4;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="340" width="1480" height="130" as="geometry"/>
+        </mxCell>
+        <mxCell id="mw" value="Edge Middleware&#xa;middleware.js · auth-edge.js&#xa;RBAC · security-headers.js" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="90" y="375" width="320" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="sa" value="Server Actions&#xa;app/actions/*&#xa;course · module · lesson · quizv2 · admin" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="440" y="375" width="320" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="api" value="API Route Handlers&#xa;app/api/*&#xa;upload · tutor · quiz-generation · analytics" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="790" y="375" width="320" height="80" as="geometry"/>
+        </mxCell>
+        <mxCell id="auth" value="Authentication Module&#xa;auth.js · auth.config.js&#xa;Credentials · JWT · bcryptjs" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="375" width="360" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- L3 -->
+        <mxCell id="band3" value="L3 CROSS-CUTTING — lib/" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontFamily=Times New Roman;fontSize=11;fontStyle=1;fillColor=#F4F4F4;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="490" width="1480" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="authz" value="Authorization &amp; RBAC&#xa;authorization.js · permissions.js · auth-helpers.js" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="120" y="525" width="420" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="val" value="Validation &amp; Security&#xa;validations.js · rate-limit.js · sanitize-html.js" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="590" y="525" width="420" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="util" value="Shared Utilities&#xa;constants.js · logger.js · errors.js · routes.js" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1060" y="525" width="420" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- L4 -->
+        <mxCell id="band4" value="L4 BUSINESS SERVICES — service/" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontFamily=Times New Roman;fontSize=11;fontStyle=1;fillColor=#F4F4F4;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="620" width="1480" height="140" as="geometry"/>
+        </mxCell>
+        <mxCell id="quiz" value="AI Quiz Pipeline&#xa;generation-orchestrator.js&#xa;quiz-generator · mcq-validator · docx-*" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="90" y="655" width="320" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="rag" value="AI RAG Tutor Pipeline&#xa;ai-tutor.js · lecture-embedder.js&#xa;vector-store.js" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="440" y="655" width="320" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="anal" value="Analytics Services&#xa;admin-analytics · instructor-analytics&#xa;export · projection · anomaly-detection" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="790" y="655" width="320" height="90" as="geometry"/>
+        </mxCell>
+        <mxCell id="mongo" value="Persistence Gateway&#xa;service/mongo.js&#xa;mongoose.connect cache" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="655" width="360" height="90" as="geometry"/>
+        </mxCell>
+
+        <!-- L5 -->
+        <mxCell id="band5" value="L5 DATA ACCESS — queries/ · model/" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontFamily=Times New Roman;fontSize=11;fontStyle=1;fillColor=#F4F4F4;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="780" width="1480" height="110" as="geometry"/>
+        </mxCell>
+        <mxCell id="qry" value="Query Modules&#xa;queries/* · queries/analytics/*" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="200" y="815" width="500" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="mdl" value="Mongoose Models (22)&#xa;model/*.js — User Course Lesson Quiz Attempt GenerationJob TutorInteraction …" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="800" y="815" width="640" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- L6 -->
+        <mxCell id="band6" value="L6 PERSISTENCE &amp; EXTERNAL" style="rounded=0;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacingLeft=8;spacingTop=4;fontFamily=Times New Roman;fontSize=11;fontStyle=1;fillColor=#F4F4F4;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="60" y="910" width="1480" height="120" as="geometry"/>
+        </mxCell>
+        <mxCell id="mdb" value="MongoDB&#xa;MONGODB_CONNECTION_STRING" style="shape=cylinder3;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;size=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="940" width="240" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="fs" value="Local FS&#xa;uploads/ · public/uploads/" style="shape=cylinder3;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;size=10;" vertex="1" parent="1">
+          <mxGeometry x="380" y="940" width="240" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="chr" value="ChromaDB&#xa;lms_course_{courseId}" style="shape=cylinder3;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;size=10;" vertex="1" parent="1">
+          <mxGeometry x="660" y="940" width="240" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="gem" value="Google Gemini API&#xa;@google/genai" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="940" y="940" width="260" height="75" as="geometry"/>
+        </mxCell>
+        <mxCell id="mock" value="MockPay&#xa;app/api/payments/mock" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;" vertex="1" parent="1">
+          <mxGeometry x="1240" y="940" width="240" height="75" as="geometry"/>
+        </mxCell>
+
+        <!-- Single vertical flow arrows between bands -->
+        <mxCell id="e1" style="endArrow=block;html=1;strokeColor=#000000;rounded=0;" edge="1" parent="1" source="band0" target="band1"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e2" style="endArrow=block;html=1;strokeColor=#000000;rounded=0;" edge="1" parent="1" source="band1" target="band2"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e3" style="endArrow=block;html=1;strokeColor=#000000;rounded=0;" edge="1" parent="1" source="band2" target="band3"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e4" style="endArrow=block;html=1;strokeColor=#000000;rounded=0;" edge="1" parent="1" source="band3" target="band4"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e5" style="endArrow=block;html=1;strokeColor=#000000;rounded=0;" edge="1" parent="1" source="band4" target="band5"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="e6" style="endArrow=block;html=1;strokeColor=#000000;rounded=0;" edge="1" parent="1" source="band5" target="band6"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="note" value="Excluded (no runtime wiring): Resend · Stripe SDK · OAuth. Pattern: Modular Monolith + Layered Architecture." style="text;html=1;align=left;fontFamily=Times New Roman;fontSize=10;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="60" y="1050" width="1400" height="30" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

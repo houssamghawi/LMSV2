@@ -1205,5 +1205,212 @@
     "paginationPrev": "السابق",
     "paginationNext": "التالي",
     "paginationPageOf": "صفحة {page} / {totalPages}"
+  },
+  "Analytics": {
+    "title": "التحليلات",
+    "adminTitle": "تحليلات المنصة",
+    "instructorTitle": "تحليلات الدورات",
+    "subtitle": "رؤى للنطاق الزمني المحدد.",
+    "navLabel": "التحليلات",
+    "sections": {
+      "overview": "نظرة عامة",
+      "users": "المستخدمون",
+      "courses": "الدورات",
+      "revenue": "الإيرادات",
+      "performance": "الأداء",
+      "projections": "التوقعات",
+      "students": "الطلاب",
+      "activity": "النشاط",
+      "earnings": "الأرباح"
+    },
+    "metrics": {
+      "totalCourses": "إجمالي الدورات",
+      "publishedCourses": "منشورة",
+      "draftCourses": "مسودة",
+      "avgEnrollments": "متوسط التسجيلات",
+      "totalUsers": "إجمالي المستخدمين",
+      "totalInstructors": "المعلّمون",
+      "totalStudents": "الطلاب",
+      "totalAdmins": "المشرفون",
+      "totalRevenue": "إجمالي الإيرادات",
+      "totalEnrollments": "إجمالي التسجيلات",
+      "activeUsers": "المستخدمون النشطون",
+      "newRegistrations": "التسجيلات الجديدة",
+      "completionRate": "معدل الإكمال",
+      "averageProgress": "متوسط التقدم",
+      "successRate": "معدل نجاح الدفع",
+      "averageTransaction": "متوسط قيمة المعاملة",
+      "transactions": "المعاملات",
+      "activeStudents": "الطلاب النشطون",
+      "inactiveStudents": "الطلاب غير النشطين",
+      "avgSessionDuration": "متوسط مدة الجلسة",
+      "inactive7d": "غير نشط (7 أيام)",
+      "inactive30d": "غير نشط (30 يوماً)",
+      "avgResponseTime": "متوسط زمن الاستجابة",
+      "p95ResponseTime": "زمن الاستجابة p95",
+      "errorRate": "معدل الأخطاء",
+      "uptime": "وقت التشغيل",
+      "totalEarnings": "إجمالي الأرباح",
+      "avgPerStudent": "المتوسط لكل طالب"
+    },
+    "dateRange": {
+      "label": "النطاق الزمني",
+      "last7Days": "آخر 7 أيام",
+      "last30Days": "آخر 30 يوماً",
+      "last90Days": "آخر 90 يوماً",
+      "custom": "نطاق مخصص",
+      "from": "من",
+      "to": "إلى",
+      "apply": "تطبيق",
+      "comparePrevious": "مقارنة بالفترة السابقة",
+      "maxRangeHint": "الحد الأقصى للنطاق هو 24 شهراً.",
+      "invalidRange": "يرجى اختيار نطاق زمني صالح."
+    },
+    "granularity": {
+      "day": "يومي",
+      "week": "أسبوعي",
+      "month": "شهري"
+    },
+    "trends": {
+      "up": "ارتفاع {percent}%",
+      "down": "انخفاض {percent}%",
+      "stable": "بدون تغيير",
+      "vsPrevious": "مقارنة بالفترة السابقة"
+    },
+    "empty": {
+      "noData": "لا توجد بيانات لهذا النطاق الزمني.",
+      "noCourses": "لا توجد دورات للعرض.",
+      "noUsers": "لا يوجد نشاط مستخدمين في هذه الفترة.",
+      "noRevenue": "لا توجد إيرادات مسجّلة لهذه الفترة.",
+      "noEnrollments": "لا توجد تسجيلات في هذه الفترة.",
+      "noStudents": "لا يوجد طلاب مسجّلون بعد.",
+      "noActivity": "لا يوجد نشاط مسجّل لهذه الفترة.",
+      "noInactiveStudents": "لا يوجد طلاب غير نشطين في هذه النافذة.",
+      "projectionsUnavailable": "التوقعات تحتاج إلى 90 يوماً على الأقل من السجل.",
+      "chartEmpty": "لا يوجد ما يُعرض في المخطط بعد."
+    },
+    "anomalies": {
+      "title": "الشذوذات",
+      "critical": "حرج",
+      "warning": "تحذير",
+      "info": "معلومات",
+      "revenueDrop": "انخفضت الإيرادات بأكثر من {percent}% مقارنة بالفترة السابقة.",
+      "errorRateSpike": "ارتفع معدل الأخطاء بأكثر من {percent}%.",
+      "registrationDrop": "انخفضت التسجيلات بأكثر من {percent}% مقارنة بالفترة السابقة.",
+      "activeUserDecline": "انخفض المستخدمون النشطون بأكثر من {percent}% مقارنة بالفترة السابقة.",
+      "activitySpike": "ارتفع النشاط بأكثر من {percent}% فوق المتوسط المتحرّك.",
+      "viewDetails": "عرض التفاصيل"
+    },
+    "export": {
+      "title": "تصدير",
+      "csv": "تصدير CSV",
+      "exporting": "جارٍ تجهيز التصدير…",
+      "success": "التصدير جاهز. بدأ التنزيل.",
+      "failed": "فشل التصدير. حاول مرة أخرى.",
+      "tooLarge": "التصدير يتجاوز الحد الأقصى للصفوف. قلّص النطاق الزمني.",
+      "includeArchived": "تضمين البيانات المؤرشفة",
+      "scopeLabel": "نطاق التصدير"
+    },
+    "charts": {
+      "registrationTrend": "اتجاه التسجيلات",
+      "activeUsersTrend": "اتجاه المستخدمين النشطين",
+      "roleDistribution": "المستخدمون حسب الدور",
+      "activityByHour": "النشاط حسب الساعة",
+      "activityByDay": "النشاط حسب اليوم",
+      "activityTrend": "اتجاه تسجيلات الدخول",
+      "responseTrend": "اتجاه زمن الاستجابة",
+      "errorTrend": "اتجاه معدل الأخطاء",
+      "errorsByType": "الأخطاء حسب النوع",
+      "earningsTrend": "اتجاه الأرباح",
+      "earningsByCourse": "الأرباح حسب الدورة",
+      "projections": "توقعات {metric}",
+      "revenueTrend": "اتجاه الإيرادات",
+      "revenueByCourse": "الإيرادات حسب الدورة",
+      "revenueByInstructor": "الإيرادات حسب المعلّم",
+      "enrollmentTrend": "اتجاه التسجيلات",
+      "completionTrend": "اتجاه الإكمال",
+      "categoryDistribution": "الدورات حسب الفئة",
+      "topCourses": "أفضل الدورات",
+      "studentProgress": "تقدم الطلاب",
+      "loading": "جارٍ تحميل المخطط…",
+      "ariaLabel": "مخطط {title}"
+    },
+    "table": {
+      "student": "الطالب",
+      "course": "الدورة",
+      "instructor": "المعلّم",
+      "enrolled": "تاريخ التسجيل",
+      "progress": "التقدم",
+      "lastActivity": "آخر نشاط",
+      "lastLogin": "آخر تسجيل دخول",
+      "revenue": "الإيرادات",
+      "enrollments": "التسجيلات",
+      "status": "الحالة",
+      "actions": "إجراءات",
+      "noRows": "لا توجد صفوف للعرض."
+    },
+    "errors": {
+      "loadFailed": "تعذّر تحميل التحليلات. حاول مرة أخرى.",
+      "unauthorized": "ليس لديك صلاحية لعرض هذه التحليلات.",
+      "forbiddenCourse": "يمكنك عرض تحليلات دوراتك فقط."
+    },
+    "mobile": {
+      "summaryTitle": "المقاييس الرئيسية",
+      "summaryHint": "افتح على شاشة أكبر للمخططات والجداول الكاملة."
+    },
+    "progressStatus": {
+      "all": "الكل",
+      "not-started": "لم يبدأ",
+      "in-progress": "قيد التقدم",
+      "near-completion": "قارب الإكمال",
+      "completed": "مكتمل"
+    },
+    "activity": {
+      "allCourses": "كل الدورات"
+    },
+    "performance": {
+      "estimatedNotice": "هذه الأرقام تقديرية مؤقتة — لم يُضبط بعد نظام مراقبة أداء أو سجل طلبات. تُعرض للمعاينة على لوحة التحكم فقط."
+    },
+    "settings": {
+      "title": "تخصيص لوحة التحكم",
+      "hint": "أظهر أو أخفِ الأقسام، وأعد ترتيبها، وعيّن النطاق الزمني الافتراضي.",
+      "widgets": "الأقسام",
+      "defaultRange": "النطاق الزمني الافتراضي",
+      "save": "حفظ",
+      "cancel": "إلغاء",
+      "saved": "تم حفظ التفضيلات.",
+      "saveFailed": "تعذّر حفظ التفضيلات.",
+      "moveUp": "تحريك لأعلى",
+      "moveDown": "تحريك لأسفل",
+      "noWidgets": "كل الأقسام مخفية. افتح تخصيص لوحة التحكم لإظهار بعضها مجدداً."
+    },
+    "projections": {
+      "metric": "المقياس",
+      "horizon": "أفق التوقع",
+      "horizonDays": "{days} يوماً",
+      "actualDays": "السجل المتاح: {actual} يوماً (المطلوب {required}).",
+      "rSquared": "R² {value}",
+      "historyDays": "{days} يوماً من السجل",
+      "lowConfidenceHint": "ثقة منخفضة — ملاءمة الاتجاه ضعيفة (R² أقل من 0.5). اعتبر التوقعات إرشادية فقط.",
+      "confidence": {
+        "high": "ثقة عالية",
+        "medium": "ثقة متوسطة",
+        "low": "ثقة منخفضة"
+      },
+      "metrics": {
+        "users": "المستخدمون",
+        "revenue": "الإيرادات",
+        "enrollments": "التسجيلات"
+      },
+      "series": {
+        "historical": "تاريخي",
+        "baseline": "خط الأساس",
+        "optimistic": "متفائل",
+        "conservative": "متحفظ"
+      }
+    },
+    "quizAverage": "متوسط الاختبار: {value}%",
+    "paginationPrev": "السابق",
+    "paginationNext": "التالي"
   }
 }
