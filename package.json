@@ -12,6 +12,8 @@
     "reembed-lessons": "tsx --tsconfig jsconfig.json scripts/reembed-lessons.js",
     "cleanup-lecture-chunks": "tsx --tsconfig jsconfig.json scripts/cleanup-lecture-chunks.js",
     "seed-tutor-config": "tsx --tsconfig jsconfig.json scripts/seed-tutor-config.js",
+    "create-analytics-indexes": "tsx --tsconfig jsconfig.json scripts/create-analytics-indexes.js",
+    "archive-analytics-data": "tsx --tsconfig jsconfig.json scripts/archive-analytics-data.js",
     "chroma": "node scripts/run-chroma.js",
     "test": "vitest run",
     "test:watch": "vitest"
@@ -60,6 +62,7 @@
     "react-hook-form": "^7.53.2",
     "react-player": "^2.16.0",
     "react-quill": "^2.0.0",
+    "recharts": "^3.10.0",
     "resend": "^4.0.1",
     "sonner": "^1.7.0",
     "tailwind-merge": "^2.5.4",
@@ -67,11 +70,15 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/node": "^22.20.1",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
     "dotenv": "^16.4.5",
     "mongodb-memory-server": "^10.4.3",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.19.2",
+    "typescript": "^5.9.3",
     "vitest": "^2.1.9"
   }
 }

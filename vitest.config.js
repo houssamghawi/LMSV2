@@ -14,7 +14,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["tests/**/*.test.js"],
+    include: ["tests/**/*.test.js", "__tests__/**/*.test.{js,ts}"],
     setupFiles: ["./tests/setup/setup.js"],
     globalSetup: ["./tests/setup/global-setup.js"],
     // Run all test files in a single fork so they share one in-memory MongoDB

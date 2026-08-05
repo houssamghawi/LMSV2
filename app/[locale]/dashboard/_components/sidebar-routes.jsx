@@ -8,7 +8,7 @@ import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
 
 const ROUTES = [
-  { icon: BarChart, labelKey: "analytics", href: "/dashboard" },
+  { icon: BarChart, labelKey: "analytics", href: "/dashboard/analytics" },
   { icon: BookOpen, labelKey: "courses", href: "/dashboard/courses" },
   { icon: BookOpen, labelKey: "addCourse", href: "/dashboard/courses/add" },
 ];

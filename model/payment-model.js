@@ -88,6 +88,12 @@ const paymentSchema = new Schema({
     refundedAt: {
         type: Date
     },
+    /** Soft-archive marker (FR-022). null/missing = included in standard analytics. */
+    archivedAt: {
+        type: Date,
+        required: false,
+        default: null,
+    },
     createdAt: {
         type: Date,
         default: Date.now

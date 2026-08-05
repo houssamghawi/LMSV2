@@ -1,0 +1,88 @@
+@startuml LMS_Container_Architecture_C4_L2
+' C4 Level 2 Container Diagram — reverse-engineered from LMSV2-main
+' Style: academic, black borders, white background, no gradients/shadows
+
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Times New Roman"
+skinparam ArrowColor #000000
+skinparam ArrowFontColor #000000
+
+title LMS Container Architecture (C4 Level 2)\nModular Monolith — Next.js 15 · Auth.js · MongoDB · Gemini · ChromaDB
+
+Person(student, "Student", "Browser user consuming courses, lessons, quizzes")
+Person(instructor, "Instructor", "Browser user authoring courses and assessments")
+Person(admin, "Administrator", "Browser user managing platform configuration")
+
+System_Boundary(lms, "LMS Application (Next.js 15 Modular Monolith)") {
+
+  Container(sui, "Student UI", "React / App Router", "app/[locale]/(main) — catalog, lessons, quizzes, account, checkout")
+  Container(iui, "Instructor UI", "React / App Router", "app/[locale]/dashboard — courses, quizzes, grading, analytics, lives")
+  Container(aui, "Admin UI", "React / App Router", "app/[locale]/admin — users, courses, payments, analytics, settings")
+
+  Container(mw, "Edge Middleware", "middleware.js", "Auth.js Edge + next-intl (en/ar) + RBAC + security headers")
+  Container(sa, "Server Actions", "app/actions/*", "Course, module, lesson, quizv2, enrollment, admin, account, review")
+  Container(api, "API Route Handlers", "app/api/*", "Upload, videos, tutor, quiz-generation, analytics, payments, certificates")
+  Container(auth, "Authentication Module", "auth.js / auth.config.js / auth-edge.js", "NextAuth v5 Credentials, bcrypt, JWT sessions")
+
+  Container(quizpipe, "AI Quiz Pipeline", "service/*", "generation-orchestrator, quiz-generator, mcq-validator, docx-extractor")
+  Container(ragpipe, "AI RAG Tutor Pipeline", "service/*", "ai-tutor, lecture-embedder, vector-store")
+  Container(analsvc, "Analytics Services", "service/analytics/*", "Admin/instructor analytics, export, projection, anomaly detection")
+  Container(mongosvc, "Mongo Connection", "service/mongo.js", "Cached mongoose.connect")
+
+  Container(queries, "Query Layer", "queries/*", "Data access and aggregations including analytics")
+  Container(models, "Mongoose Models", "model/*", "User, Course, Lesson, Quiz, Attempt, GenerationJob, TutorInteraction, …")
+}
+
+System_Ext(gemini, "Google Gemini API", "generateContent + embedContent via @google/genai")
+SystemDb(mongodb, "MongoDB", "Primary document store (MONGODB_CONNECTION_STRING)")
+SystemDb(chroma, "ChromaDB", "Vector store — collections lms_course_{courseId}")
+SystemDb(fs, "Local Filesystem", "uploads/videos, uploads/lessons, uploads/lesson-images, public/uploads")
+System_Ext(mockpay, "MockPay", "Internal mock payment confirmation API")
+
+Rel(student, mw, "HTTPS")
+Rel(instructor, mw, "HTTPS")
+Rel(admin, mw, "HTTPS")
+
+Rel(mw, sui, "Route / localize / authorize")
+Rel(mw, iui, "Route / localize / authorize")
+Rel(mw, aui, "Route / localize / authorize")
+
+Rel(sui, sa, "Mutations")
+Rel(sui, api, "REST / fetch")
+Rel(iui, sa, "Mutations")
+Rel(iui, api, "REST / fetch")
+Rel(aui, sa, "Mutations")
+Rel(aui, api, "REST / fetch")
+
+Rel(mw, auth, "Session (Edge)")
+Rel(sa, auth, "requireAuth / role checks")
+Rel(api, auth, "Session / credentials")
+
+Rel(auth, queries, "Load User")
+Rel(sa, queries, "CRUD")
+Rel(api, queries, "CRUD / jobs")
+Rel(api, quizpipe, "Quiz generation jobs")
+Rel(api, ragpipe, "Tutor ask / embed sync")
+Rel(api, analsvc, "Analytics queries")
+Rel(api, fs, "Read/write media")
+Rel(api, mockpay, "Confirm payment")
+
+Rel(quizpipe, gemini, "Structured quiz JSON")
+Rel(ragpipe, gemini, "Embeddings + tutor answers")
+Rel(ragpipe, chroma, "Upsert / similarity query")
+
+Rel(queries, models, "ORM")
+Rel(models, mongosvc, "Mongoose")
+Rel(quizpipe, mongosvc, "Jobs / drafts")
+Rel(ragpipe, mongosvc, "Interactions / lesson status")
+Rel(analsvc, queries, "Aggregations")
+Rel(mongosvc, mongodb, "TCP")
+Rel(mockpay, queries, "Enrollment + Payment")
+
+@enduml

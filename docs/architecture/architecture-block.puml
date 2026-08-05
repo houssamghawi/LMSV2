@@ -1,0 +1,103 @@
+@startuml LMS_Architecture_Block_Diagram
+' IEEE-style layered architecture block diagram
+' Blocks verified from LMSV2-main source — no invented modules
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Times New Roman"
+skinparam rectangle {
+  BackgroundColor #FFFFFF
+  BorderColor #000000
+  FontColor #000000
+}
+skinparam package {
+  BackgroundColor #F4F4F4
+  BorderColor #000000
+  FontColor #000000
+  FontStyle bold
+}
+skinparam ArrowColor #000000
+
+title Software Architecture Block Diagram\nLMSV2 — Modular Monolith · Layered Architecture (Next.js 15 App Router)
+
+package "Actors" {
+  rectangle "Student\nBrowser · student" as ST
+  rectangle "Instructor\nBrowser · instructor" as IN
+  rectangle "Administrator\nBrowser · admin" as AD
+}
+
+package "L1 Presentation — app/[locale]" {
+  rectangle "Student UI\napp/[locale]/(main)\ncourses · lessons · quizzes · account" as SUI
+  rectangle "Instructor UI\napp/[locale]/dashboard\ncourses · quizzes · grading · analytics" as IUI
+  rectangle "Admin UI\napp/[locale]/admin\nusers · payments · analytics · settings" as AUI
+  rectangle "i18n Shell\ni18n/routing.js · next-intl\nen · ar" as I18N
+}
+
+package "L2 Application / Edge" {
+  rectangle "Edge Middleware\nmiddleware.js · auth-edge.js\nRBAC · security-headers.js" as MW
+  rectangle "Server Actions\napp/actions/*\ncourse · module · lesson · quizv2 · admin" as SA
+  rectangle "API Route Handlers\napp/api/*\nupload · tutor · quiz-generation · analytics" as API
+  rectangle "Authentication Module\nauth.js · auth.config.js\nCredentials · JWT · bcryptjs" as AUTH
+}
+
+package "L3 Cross-Cutting — lib/" {
+  rectangle "Authorization and RBAC\nauthorization.js · permissions.js\nauth-helpers.js" as AUTHZ
+  rectangle "Validation and Security\nvalidations.js · rate-limit.js\nsanitize-html.js" as VAL
+  rectangle "Shared Utilities\nconstants.js · logger.js\nerrors.js · routes.js" as UTIL
+}
+
+package "L4 Business Services — service/" {
+  rectangle "AI Quiz Pipeline\ngeneration-orchestrator.js\nquiz-generator.js · mcq-validator.js\ndocx-extractor.js · docx-validator.js" as QUIZ
+  rectangle "AI RAG Tutor Pipeline\nai-tutor.js · lecture-embedder.js\nvector-store.js" as RAG
+  rectangle "Analytics Services\nadmin-analytics · instructor-analytics\nexport · projection · anomaly-detection" as ANAL
+  rectangle "Persistence Gateway\nmongo.js" as MONGO
+}
+
+package "L5 Data Access — queries/ · model/" {
+  rectangle "Query Modules\nqueries/* · queries/analytics/*" as QRY
+  rectangle "Mongoose Models (22)\nmodel/*.js" as MDL
+}
+
+package "L6 Persistence and External" {
+  database "MongoDB" as MDB
+  database "Local FS\nuploads/ · public/uploads/" as FS
+  database "ChromaDB\nlms_course_{id}" as CHR
+  rectangle "Google Gemini API\n@google/genai" as GEM
+  rectangle "MockPay\napp/api/payments/mock" as MOCK
+}
+
+ST -[hidden]-> IN
+IN -[hidden]-> AD
+ST --> SUI
+IN --> IUI
+AD --> AUI
+SUI --> MW
+IUI --> MW
+AUI --> MW
+MW --> SA
+MW --> API
+MW --> AUTH
+SA --> AUTHZ
+API --> AUTHZ
+AUTH --> AUTHZ
+AUTHZ --> QUIZ
+AUTHZ --> RAG
+AUTHZ --> ANAL
+QUIZ --> QRY
+RAG --> QRY
+ANAL --> QRY
+QRY --> MDL
+MDL --> MONGO
+MONGO --> MDB
+API --> FS
+QUIZ --> GEM
+RAG --> GEM
+RAG --> CHR
+API --> MOCK
+
+note bottom
+  Excluded (no runtime wiring): Resend · Stripe SDK · OAuth providers
+  Pattern: Modular Monolith + Layered Architecture
+end note
+
+@enduml
