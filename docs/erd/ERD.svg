@@ -1,0 +1,552 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="6200" height="4400" viewBox="0 0 6200 4400">
+<rect width="6200" height="4400" fill="#FFFFFF"/>
+<text x="3100.0" y="42" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="36" font-weight="bold" fill="#000000">MongoDB Logical Entity-Relationship Diagram</text>
+<text x="3100.0" y="78" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="20" fill="#000000">LMSV2 — Collections reverse-engineered from Mongoose schemas (model/*)</text>
+<text x="3100.0" y="108" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="16" fill="#000000">Crow's Foot notation · PK / UK / FK / EMB from actual schema definitions</text>
+<text x="80" y="140" font-family="Times New Roman, Times, serif" font-size="14" font-weight="bold" fill="#000000">USER &amp; CONFIG</text>
+<text x="1280" y="140" font-family="Times New Roman, Times, serif" font-size="14" font-weight="bold" fill="#000000">CATALOG</text>
+<text x="2480" y="140" font-family="Times New Roman, Times, serif" font-size="14" font-weight="bold" fill="#000000">ENROLLMENT &amp; PROGRESS</text>
+<text x="3680" y="140" font-family="Times New Roman, Times, serif" font-size="14" font-weight="bold" fill="#000000">ASSESSMENT v2 &amp; AI QUIZ</text>
+<text x="4880" y="140" font-family="Times New Roman, Times, serif" font-size="14" font-weight="bold" fill="#000000">AI TUTOR</text>
+<defs>
+<marker id="cf-many" markerWidth="14" markerHeight="12" refX="12" refY="6" orient="auto"><path d="M0,0 L12,6 L0,12 M12,0 L12,12" fill="none" stroke="#000000" stroke-width="1.5"/></marker>
+<marker id="cf-one" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M8,0 L8,10" fill="none" stroke="#000000" stroke-width="2"/></marker>
+</defs>
+<path d="M 1180.0 355.0 L 1212.0 355.0 L 1212.0 644.0 L 1280.0 644.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="1188.0" y="349.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="1263.0" y="638.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="1212.0" y="473.5" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">instructor</text>
+<path d="M 1830.0 308.0 L 1818.0 308.0 L 1818.0 460.0 L 1830.0 460.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="1827.0" y="302.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="1827.0" y="454.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="1818.0" y="364.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">category</text>
+<path d="M 1830.0 828.0 L 1824.0 828.0 L 1824.0 1120.0 L 1830.0 1120.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="1828.5" y="822.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="1828.5" y="1114.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="1824.0" y="960.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">modules[] / course</text>
+<path d="M 1830.0 1356.0 L 1830.0 1356.0 L 1830.0 1580.0 L 1830.0 1580.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="1830.0" y="1350.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="1830.0" y="1574.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="1830.0" y="1460.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">lessonIds[]</text>
+<path d="M 1180.0 355.0 L 1836.0 355.0 L 1836.0 300.0 L 2480.0 300.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="1344.0" y="349.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="2319.0" y="294.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="1836.0" y="325.5" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">student</text>
+<path d="M 2380.0 644.0 L 2717.0 644.0 L 2717.0 440.0 L 3030.0 440.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="2464.2" y="638.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="2951.8" y="434.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="2717.0" y="546.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">course</text>
+<path d="M 3030.0 440.0 L 3048.0 440.0 L 3048.0 680.0 L 3030.0 680.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-one)"/>
+<text x="3034.5" y="434.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">0..1</text>
+<text x="3034.5" y="674.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">0..1</text>
+<text x="3048.0" y="570.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">payment</text>
+<path d="M 1180.0 355.0 L 1812.0 355.0 L 1812.0 919.0 L 2480.0 919.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="1338.0" y="349.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="2313.0" y="913.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="1812.0" y="611.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">user</text>
+<path d="M 2380.0 644.0 L 2418.0 644.0 L 2418.0 919.0 L 2480.0 919.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="2389.5" y="638.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="2464.5" y="913.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="2418.0" y="761.5" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">course</text>
+<path d="M 630.0 550.0 L 1224.0 550.0 L 1224.0 2780.0 L 1830.0 2780.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="778.5" y="544.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="1678.5" y="2774.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="1224.0" y="1651.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">user</text>
+<path d="M 1830.0 828.0 L 1830.0 828.0 L 1830.0 2780.0 L 1830.0 2780.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="1830.0" y="822.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="1830.0" y="2774.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="1830.0" y="1796.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">courseId</text>
+<path d="M 630.0 550.0 L 1836.0 550.0 L 1836.0 1480.0 L 3030.0 1480.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="931.5" y="544.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="2731.5" y="1474.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="1836.0" y="1013.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">user</text>
+<path d="M 2380.0 1874.0 L 2717.0 1874.0 L 2717.0 1716.0 L 3030.0 1716.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="2464.2" y="1868.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="2951.8" y="1710.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="2717.0" y="1799.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">lesson</text>
+<path d="M 1830.0 1356.0 L 2448.0 1356.0 L 2448.0 1480.0 L 3030.0 1480.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="1984.5" y="1350.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="2884.5" y="1474.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="2448.0" y="1428.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">module</text>
+<path d="M 630.0 550.0 L 1812.0 550.0 L 1812.0 1980.0 L 3030.0 1980.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="925.5" y="544.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="2725.5" y="1974.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="1812.0" y="1239.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">student</text>
+<path d="M 1830.0 828.0 L 2418.0 828.0 L 2418.0 1980.0 L 3030.0 1980.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="1977.0" y="822.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="2877.0" y="1974.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="2418.0" y="1384.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">course</text>
+<path d="M 3030.0 2680.0 L 3024.0 2680.0 L 3024.0 2282.0 L 3030.0 2282.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-one)"/>
+<text x="3028.5" y="2674.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">0..1</text>
+<text x="3028.5" y="2276.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">0..1</text>
+<text x="3024.0" y="2467.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">quizAssessment</text>
+<path d="M 4230.0 616.0 L 3630.0 616.0 L 3630.0 1980.0 L 3030.0 1980.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="4080.0" y="610.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="3180.0" y="1974.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="3630.0" y="1290.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">passedQuizIds[] M:N</text>
+<path d="M 2380.0 644.0 L 3036.0 644.0 L 3036.0 388.0 L 3680.0 388.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="2544.0" y="638.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="3519.0" y="382.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="3036.0" y="514.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">courseId</text>
+<path d="M 1830.0 1580.0 L 3042.0 1580.0 L 3042.0 616.0 L 4230.0 616.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="2133.0" y="1574.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">0..1</text>
+<text x="3933.0" y="610.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="3042.0" y="1102.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">lessonId</text>
+<path d="M 1180.0 355.0 L 2448.0 355.0 L 2448.0 388.0 L 3680.0 388.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="1497.0" y="349.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="3372.0" y="382.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="2448.0" y="381.5" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">createdBy</text>
+<path d="M 4230.0 616.0 L 4212.0 616.0 L 4212.0 900.0 L 4230.0 900.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="4225.5" y="610.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="4225.5" y="894.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="4212.0" y="732.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">quizId</text>
+<path d="M 4230.0 616.0 L 4218.0 616.0 L 4218.0 1680.0 L 4230.0 1680.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="4227.0" y="610.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="4227.0" y="1674.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="4218.0" y="1128.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">quizId</text>
+<path d="M 630.0 550.0 L 2424.0 550.0 L 2424.0 1680.0 L 4230.0 1680.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="1078.5" y="544.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="3778.5" y="1674.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="2424.0" y="1101.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">studentId</text>
+<path d="M 630.0 550.0 L 2430.0 550.0 L 2430.0 2680.0 L 4230.0 2680.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="1080.0" y="544.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="3780.0" y="2674.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="2430.0" y="1607.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">userId</text>
+<path d="M 1830.0 828.0 L 3036.0 828.0 L 3036.0 2680.0 L 4230.0 2680.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="2131.5" y="822.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="3931.5" y="2674.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="3036.0" y="1752.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">courseId</text>
+<path d="M 2380.0 1874.0 L 3042.0 1874.0 L 3042.0 2963.0 L 3680.0 2963.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="2545.5" y="1868.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">0..1</text>
+<text x="3520.5" y="2957.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="3042.0" y="2422.5" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">lessonId</text>
+<path d="M 4230.0 616.0 L 4248.0 616.0 L 4248.0 2680.0 L 4230.0 2680.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="4234.5" y="610.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">0..1</text>
+<text x="4234.5" y="2674.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="4248.0" y="1658.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">targetQuizId</text>
+<path d="M 4230.0 2680.0 L 4212.0 2680.0 L 4212.0 616.0 L 4230.0 616.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-one)"/>
+<text x="4225.5" y="2674.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">0..1</text>
+<text x="4225.5" y="610.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">0..1</text>
+<text x="4212.0" y="1622.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">generationJobId</text>
+<path d="M 630.0 550.0 L 618.0 550.0 L 618.0 2260.0 L 630.0 2260.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="627.0" y="544.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="627.0" y="2254.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="618.0" y="1385.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">updatedBy</text>
+<path d="M 630.0 550.0 L 624.0 550.0 L 624.0 1800.0 L 630.0 1800.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="628.5" y="544.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="628.5" y="1794.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="624.0" y="1161.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">userId</text>
+<path d="M 2380.0 644.0 L 3630.0 644.0 L 3630.0 289.0 L 4880.0 289.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-one)"/>
+<text x="2692.5" y="638.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">0..1</text>
+<text x="4567.5" y="283.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">0..1</text>
+<text x="3630.0" y="458.5" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">courseId sparse UK</text>
+<path d="M 1180.0 355.0 L 3036.0 355.0 L 3036.0 289.0 L 4880.0 289.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="1644.0" y="349.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="4419.0" y="283.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="3036.0" y="320.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">updatedBy</text>
+<path d="M 1180.0 355.0 L 3042.0 355.0 L 3042.0 873.0 L 4880.0 873.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="1645.5" y="349.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="4420.5" y="867.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="3042.0" y="618.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">studentId</text>
+<path d="M 2380.0 644.0 L 3648.0 644.0 L 3648.0 873.0 L 4880.0 873.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="2697.0" y="638.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="4572.0" y="867.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="3648.0" y="768.5" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">courseId</text>
+<path d="M 2380.0 1874.0 L 3612.0 1874.0 L 3612.0 873.0 L 4880.0 873.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="2688.0" y="1868.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="4563.0" y="867.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="3612.0" y="1347.5" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">lessonId</text>
+<path d="M 5430.0 1046.0 L 5418.0 1046.0 L 5418.0 1460.0 L 5430.0 1460.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="5427.0" y="1040.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="5427.0" y="1454.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="5418.0" y="1233.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">interactionId</text>
+<path d="M 1180.0 355.0 L 3299.0 355.0 L 3299.0 1460.0 L 5430.0 1460.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="1709.8" y="349.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="4897.2" y="1454.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="3299.0" y="893.5" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">studentId</text>
+<path d="M 630.0 550.0 L 630.0 550.0 L 630.0 820.0 L 630.0 820.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="630.0" y="544.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="630.0" y="814.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="630.0" y="677.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">user</text>
+<path d="M 630.0 550.0 L 636.0 550.0 L 636.0 1280.0 L 630.0 1280.0" fill="none" stroke="#000000" stroke-width="1.4" marker-end="url(#cf-many)"/>
+<text x="631.5" y="544.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">1</text>
+<text x="631.5" y="1274.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">N</text>
+<text x="636.0" y="913.0" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="11" fill="#000000">user</text>
+<rect x="80" y="160" width="1100" height="390" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="80" y="160" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="630.0" y="180" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">users</text>
+<text x="630.0" y="200" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: User</text>
+<line x1="80" y1="208" x2="1180" y2="208" stroke="#000000" stroke-width="1.5"/>
+<text x="92" y="228" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="92" y="250" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">firstName : String  [REQ]</text>
+<text x="92" y="272" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">lastName : String  [REQ]</text>
+<text x="92" y="294" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">password : String  [REQ]</text>
+<text x="92" y="316" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">email : String  [UK REQ]</text>
+<text x="92" y="338" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">role : String  [REQ]</text>
+<text x="92" y="360" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">phone : String</text>
+<text x="92" y="382" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">bio : String</text>
+<text x="92" y="404" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">socialMedia : Object</text>
+<text x="92" y="426" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">profilePicture : String</text>
+<text x="92" y="448" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">designation : String</text>
+<text x="92" y="470" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">status : String</text>
+<text x="92" y="492" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">lastLogin : Date</text>
+<text x="92" y="514" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">createdAt : Date</text>
+<text x="92" y="536" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">updatedAt : Date</text>
+<rect x="80" y="820" width="1100" height="236" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="80" y="820" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="630.0" y="840" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">useractivitylogs</text>
+<text x="630.0" y="860" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: UserActivityLog</text>
+<line x1="80" y1="868" x2="1180" y2="868" stroke="#000000" stroke-width="1.5"/>
+<text x="92" y="888" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="92" y="910" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">user : ObjectId→User  [FK REQ]</text>
+<text x="92" y="932" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">action : String  [REQ]</text>
+<text x="92" y="954" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">timestamp : Date  [REQ]</text>
+<text x="92" y="976" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">sessionDuration : Number</text>
+<text x="92" y="998" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">ipAddress : String</text>
+<text x="92" y="1020" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">userAgent : String</text>
+<text x="92" y="1042" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">archivedAt : Date</text>
+<rect x="80" y="1280" width="1100" height="280" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="80" y="1280" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="630.0" y="1300" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">dashboardpreferences</text>
+<text x="630.0" y="1320" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: DashboardPreference</text>
+<line x1="80" y1="1328" x2="1180" y2="1328" stroke="#000000" stroke-width="1.5"/>
+<text x="92" y="1348" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="92" y="1370" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">user : ObjectId→User  [FK REQ]</text>
+<text x="92" y="1392" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">role : String  [REQ]</text>
+<text x="92" y="1414" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">layout[] : embed widget  [EMB ARR]</text>
+<text x="92" y="1436" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">defaultDateRange : String</text>
+<text x="92" y="1458" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">customDateRange : embed  [EMB]</text>
+<text x="92" y="1480" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">hiddenWidgets[] : String  [ARR]</text>
+<text x="92" y="1502" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">createdAt : Date</text>
+<text x="92" y="1524" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">updatedAt : Date</text>
+<text x="92" y="1546" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">UK(user,role) : —  [UK]</text>
+<rect x="80" y="1800" width="1100" height="214" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="80" y="1800" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="630.0" y="1820" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">aiprocessingconsents</text>
+<text x="630.0" y="1840" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: AIProcessingConsent</text>
+<line x1="80" y1="1848" x2="1180" y2="1848" stroke="#000000" stroke-width="1.5"/>
+<text x="92" y="1868" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="92" y="1890" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">userId : ObjectId→User  [FK REQ]</text>
+<text x="92" y="1912" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">consentVersion : String  [REQ]</text>
+<text x="92" y="1934" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">acknowledgedAt : Date  [REQ]</text>
+<text x="92" y="1956" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">userAgent : String</text>
+<text x="92" y="1978" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">createdAt : Date</text>
+<text x="92" y="2000" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">UK(userId,consentVersion) : —  [UK]</text>
+<rect x="80" y="2260" width="1100" height="258" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="80" y="2260" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="630.0" y="2280" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">adminquizconfigs</text>
+<text x="630.0" y="2300" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: AdminQuizConfig</text>
+<line x1="80" y1="2308" x2="1180" y2="2308" stroke="#000000" stroke-width="1.5"/>
+<text x="92" y="2328" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="92" y="2350" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">dailyQuotaPerInstructor : Number  [REQ]</text>
+<text x="92" y="2372" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">maxDocumentSizeBytes : Number  [REQ]</text>
+<text x="92" y="2394" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">maxQuestionsPerGeneration : Number  [REQ]</text>
+<text x="92" y="2416" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">sourceRetentionEnabled : Boolean  [REQ]</text>
+<text x="92" y="2438" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">sourceRetentionDays : Number</text>
+<text x="92" y="2460" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">updatedBy : ObjectId→User  [FK REQ]</text>
+<text x="92" y="2482" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">createdAt : Date</text>
+<text x="92" y="2504" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">updatedAt : Date</text>
+<rect x="1280" y="160" width="1100" height="148" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="1280" y="160" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="1830.0" y="180" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">categories</text>
+<text x="1830.0" y="200" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: Category</text>
+<line x1="1280" y1="208" x2="2380" y2="208" stroke="#000000" stroke-width="1.5"/>
+<text x="1292" y="228" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="1292" y="250" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">title : String  [REQ]</text>
+<text x="1292" y="272" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">description : String</text>
+<text x="1292" y="294" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">thumbnail : String  [REQ]</text>
+<rect x="1280" y="460" width="1100" height="368" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="1280" y="460" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="1830.0" y="480" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">courses</text>
+<text x="1830.0" y="500" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: Course</text>
+<line x1="1280" y1="508" x2="2380" y2="508" stroke="#000000" stroke-width="1.5"/>
+<text x="1292" y="528" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="1292" y="550" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">title : String  [REQ]</text>
+<text x="1292" y="572" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">subtitle : String</text>
+<text x="1292" y="594" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">description : String  [REQ]</text>
+<text x="1292" y="616" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">thumbnail : String</text>
+<text x="1292" y="638" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">modules[] : ObjectId→Module  [FK ARR]</text>
+<text x="1292" y="660" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">price : Number  [REQ]</text>
+<text x="1292" y="682" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">active : Boolean  [REQ]</text>
+<text x="1292" y="704" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">category : ObjectId→Category  [FK]</text>
+<text x="1292" y="726" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">instructor : ObjectId→User  [FK]</text>
+<text x="1292" y="748" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">testimonials[] : ObjectId→Testimonial  [FK ARR]</text>
+<text x="1292" y="770" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">learning[] : String  [ARR]</text>
+<text x="1292" y="792" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">createdOn : Date  [REQ]</text>
+<text x="1292" y="814" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">modifiedOn : Date  [REQ]</text>
+<rect x="1280" y="1120" width="1100" height="236" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="1280" y="1120" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="1830.0" y="1140" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">modules</text>
+<text x="1830.0" y="1160" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: Module</text>
+<line x1="1280" y1="1168" x2="2380" y2="1168" stroke="#000000" stroke-width="1.5"/>
+<text x="1292" y="1188" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="1292" y="1210" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">title : String  [REQ]</text>
+<text x="1292" y="1232" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">description : String</text>
+<text x="1292" y="1254" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">active : Boolean  [REQ]</text>
+<text x="1292" y="1276" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">slug : String  [REQ]</text>
+<text x="1292" y="1298" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">course : ObjectId→Course  [FK REQ*]</text>
+<text x="1292" y="1320" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">lessonIds[] : ObjectId→Lesson  [FK ARR]</text>
+<text x="1292" y="1342" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">order : Number</text>
+<rect x="1280" y="1580" width="1100" height="588" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="1280" y="1580" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="1830.0" y="1600" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">lessons</text>
+<text x="1830.0" y="1620" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: Lesson</text>
+<line x1="1280" y1="1628" x2="2380" y2="1628" stroke="#000000" stroke-width="1.5"/>
+<text x="1292" y="1648" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="1292" y="1670" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">title : String  [REQ]</text>
+<text x="1292" y="1692" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">description : String</text>
+<text x="1292" y="1714" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">duration : Number  [REQ]</text>
+<text x="1292" y="1736" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">video_url : String</text>
+<text x="1292" y="1758" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">videoProvider : String</text>
+<text x="1292" y="1780" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">videoFilename : String</text>
+<text x="1292" y="1802" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">videoUrl : String</text>
+<text x="1292" y="1824" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">videoMimeType : String</text>
+<text x="1292" y="1846" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">videoSize : Number</text>
+<text x="1292" y="1868" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">active : Boolean  [REQ]</text>
+<text x="1292" y="1890" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">slug : String  [REQ]</text>
+<text x="1292" y="1912" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">access : String  [REQ]</text>
+<text x="1292" y="1934" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">order : Number  [REQ]</text>
+<text x="1292" y="1956" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">tutorEmbeddingStatus : String</text>
+<text x="1292" y="1978" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">tutorContentHash : String</text>
+<text x="1292" y="2000" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">tutorEmbeddedAt : Date</text>
+<text x="1292" y="2022" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">tutorEmbeddingError : String</text>
+<text x="1292" y="2044" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">docxFilename : String</text>
+<text x="1292" y="2066" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">docxOriginalName : String</text>
+<text x="1292" y="2088" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">docxSize : Number</text>
+<text x="1292" y="2110" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">docxUploadedAt : Date</text>
+<text x="1292" y="2132" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">extractedHtml : String</text>
+<text x="1292" y="2154" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">extractedText : String</text>
+<rect x="1280" y="2780" width="1100" height="170" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="1280" y="2780" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="1830.0" y="2800" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">testimonials</text>
+<text x="1830.0" y="2820" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: Testimonial</text>
+<line x1="1280" y1="2828" x2="2380" y2="2828" stroke="#000000" stroke-width="1.5"/>
+<text x="1292" y="2848" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="1292" y="2870" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">content : String  [REQ]</text>
+<text x="1292" y="2892" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">rating : Number  [REQ]</text>
+<text x="1292" y="2914" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">courseId : ObjectId→Course  [FK]</text>
+<text x="1292" y="2936" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">user : ObjectId→User  [FK]</text>
+<rect x="2480" y="160" width="1100" height="280" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="2480" y="160" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="3030.0" y="180" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">enrollments</text>
+<text x="3030.0" y="200" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: Enrollment</text>
+<line x1="2480" y1="208" x2="3580" y2="208" stroke="#000000" stroke-width="1.5"/>
+<text x="2492" y="228" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="2492" y="250" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">enrollment_date : Date  [REQ]</text>
+<text x="2492" y="272" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">status : String  [REQ]</text>
+<text x="2492" y="294" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">completion_date : Date</text>
+<text x="2492" y="316" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">method : String  [REQ]</text>
+<text x="2492" y="338" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">course : ObjectId→Course  [FK REQ]</text>
+<text x="2492" y="360" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">student : ObjectId→User  [FK REQ]</text>
+<text x="2492" y="382" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">payment : ObjectId→Payment  [FK]</text>
+<text x="2492" y="404" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">archivedAt : Date</text>
+<text x="2492" y="426" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">UK(student,course) : —  [UK]</text>
+<rect x="2480" y="680" width="1100" height="478" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="2480" y="680" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="3030.0" y="700" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">payments</text>
+<text x="3030.0" y="720" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: Payment</text>
+<line x1="2480" y1="728" x2="3580" y2="728" stroke="#000000" stroke-width="1.5"/>
+<text x="2492" y="748" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="2492" y="770" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">user : ObjectId→User  [FK REQ]</text>
+<text x="2492" y="792" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">course : ObjectId→Course  [FK REQ]</text>
+<text x="2492" y="814" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">sessionId : String</text>
+<text x="2492" y="836" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">paymentIntentId : String</text>
+<text x="2492" y="858" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">customerId : String</text>
+<text x="2492" y="880" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">referenceId : String  [UK]</text>
+<text x="2492" y="902" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">amount : Number  [REQ]</text>
+<text x="2492" y="924" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">currency : String  [REQ]</text>
+<text x="2492" y="946" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">status : String  [REQ]</text>
+<text x="2492" y="968" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">provider : String  [REQ]</text>
+<text x="2492" y="990" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">metadata : Mixed</text>
+<text x="2492" y="1012" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">refundedAmount : Number</text>
+<text x="2492" y="1034" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">refundReason : String</text>
+<text x="2492" y="1056" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">paidAt : Date</text>
+<text x="2492" y="1078" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">refundedAt : Date</text>
+<text x="2492" y="1100" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">archivedAt : Date</text>
+<text x="2492" y="1122" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">createdAt : Date</text>
+<text x="2492" y="1144" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">updatedAt : Date</text>
+<rect x="2480" y="1480" width="1100" height="236" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="2480" y="1480" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="3030.0" y="1500" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">watches</text>
+<text x="3030.0" y="1520" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: Watch</text>
+<line x1="2480" y1="1528" x2="3580" y2="1528" stroke="#000000" stroke-width="1.5"/>
+<text x="2492" y="1548" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="2492" y="1570" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">state : String  [REQ]</text>
+<text x="2492" y="1592" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">created_at : Date  [REQ]</text>
+<text x="2492" y="1614" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">modified_at : Date  [REQ]</text>
+<text x="2492" y="1636" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">lesson : ObjectId→Lesson  [FK]</text>
+<text x="2492" y="1658" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">module : ObjectId→Module  [FK]</text>
+<text x="2492" y="1680" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">user : ObjectId→User  [FK]</text>
+<text x="2492" y="1702" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">lastTime : Number  [REQ]</text>
+<rect x="2480" y="1980" width="1100" height="302" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="2480" y="1980" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="3030.0" y="2000" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">reports</text>
+<text x="3030.0" y="2020" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: Report</text>
+<line x1="2480" y1="2028" x2="3580" y2="2028" stroke="#000000" stroke-width="1.5"/>
+<text x="2492" y="2048" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="2492" y="2070" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">totalCompletedLessons : Array  [ARR REQ]</text>
+<text x="2492" y="2092" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">totalCompletedModules : Array  [ARR REQ]</text>
+<text x="2492" y="2114" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">course : ObjectId→Course  [FK]</text>
+<text x="2492" y="2136" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">student : ObjectId→User  [FK]</text>
+<text x="2492" y="2158" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">quizAssessment : ObjectId→Assessment  [FK]</text>
+<text x="2492" y="2180" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">passedQuizIds[] : ObjectId→Quiz  [FK ARR]</text>
+<text x="2492" y="2202" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">latestQuizAttemptByQuiz : Map</text>
+<text x="2492" y="2224" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">completion_date : Date</text>
+<text x="2492" y="2246" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">UK(course,student) : —  [UK]</text>
+<text x="2492" y="2268" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">totalCompletedModeules : virtual  [VIR]</text>
+<rect x="2480" y="2680" width="1100" height="126" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="2480" y="2680" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="3030.0" y="2700" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">assessments</text>
+<text x="3030.0" y="2720" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: Assessment</text>
+<line x1="2480" y1="2728" x2="3580" y2="2728" stroke="#000000" stroke-width="1.5"/>
+<text x="2492" y="2748" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="2492" y="2770" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">assessments : Array  [ARR REQ]</text>
+<text x="2492" y="2792" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">otherMarks : Number  [REQ]</text>
+<rect x="3680" y="160" width="1100" height="456" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="3680" y="160" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="4230.0" y="180" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">quizzes</text>
+<text x="4230.0" y="200" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: Quiz</text>
+<line x1="3680" y1="208" x2="4780" y2="208" stroke="#000000" stroke-width="1.5"/>
+<text x="3692" y="228" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="3692" y="250" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">courseId : ObjectId→Course  [FK REQ]</text>
+<text x="3692" y="272" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">lessonId : ObjectId→Lesson  [FK]</text>
+<text x="3692" y="294" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">title : String  [REQ]</text>
+<text x="3692" y="316" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">description : String</text>
+<text x="3692" y="338" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">published : Boolean</text>
+<text x="3692" y="360" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">required : Boolean</text>
+<text x="3692" y="382" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">passPercent : Number</text>
+<text x="3692" y="404" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">timeLimitSec : Number</text>
+<text x="3692" y="426" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">maxAttempts : Number</text>
+<text x="3692" y="448" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">shuffleQuestions : Boolean</text>
+<text x="3692" y="470" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">shuffleOptions : Boolean</text>
+<text x="3692" y="492" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">showAnswersPolicy : String</text>
+<text x="3692" y="514" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">createdBy : ObjectId→User  [FK REQ]</text>
+<text x="3692" y="536" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">aiGenerated : Boolean</text>
+<text x="3692" y="558" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">generationJobId : ObjectId→GenerationJob  [FK]</text>
+<text x="3692" y="580" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">createdAt : Date</text>
+<text x="3692" y="602" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">updatedAt : Date</text>
+<rect x="3680" y="900" width="1100" height="368" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="3680" y="900" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="4230.0" y="920" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">questions</text>
+<text x="4230.0" y="940" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: Question</text>
+<line x1="3680" y1="948" x2="4780" y2="948" stroke="#000000" stroke-width="1.5"/>
+<text x="3692" y="968" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="3692" y="990" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">quizId : ObjectId→Quiz  [FK REQ]</text>
+<text x="3692" y="1012" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">type : String  [REQ]</text>
+<text x="3692" y="1034" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">text : String  [REQ]</text>
+<text x="3692" y="1056" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">options[] : embed {id,text}  [EMB ARR REQ]</text>
+<text x="3692" y="1078" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">correctOptionIds[] : String  [ARR REQ]</text>
+<text x="3692" y="1100" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">modelAnswer : String</text>
+<text x="3692" y="1122" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">explanation : String</text>
+<text x="3692" y="1144" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">sourceQuote : String</text>
+<text x="3692" y="1166" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">difficulty : String</text>
+<text x="3692" y="1188" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">points : Number</text>
+<text x="3692" y="1210" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">order : Number  [REQ]</text>
+<text x="3692" y="1232" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">createdAt : Date</text>
+<text x="3692" y="1254" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">updatedAt : Date</text>
+<rect x="3680" y="1680" width="1100" height="456" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="3680" y="1680" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="4230.0" y="1700" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">attempts</text>
+<text x="4230.0" y="1720" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: Attempt</text>
+<line x1="3680" y1="1728" x2="4780" y2="1728" stroke="#000000" stroke-width="1.5"/>
+<text x="3692" y="1748" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="3692" y="1770" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">quizId : ObjectId→Quiz  [FK REQ]</text>
+<text x="3692" y="1792" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">studentId : ObjectId→User  [FK REQ]</text>
+<text x="3692" y="1814" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">status : String</text>
+<text x="3692" y="1836" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">startedAt : Date  [REQ]</text>
+<text x="3692" y="1858" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">expiresAt : Date</text>
+<text x="3692" y="1880" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">submittedAt : Date</text>
+<text x="3692" y="1902" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">answers[] : embed answer  [EMB ARR]</text>
+<text x="3692" y="1924" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">  └ questionId : ObjectId→Question*  [FK]</text>
+<text x="3692" y="1946" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">  └ gradedBy : ObjectId→User  [FK]</text>
+<text x="3692" y="1968" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">score : Number</text>
+<text x="3692" y="1990" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">scorePercent : Number</text>
+<text x="3692" y="2012" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">passed : Boolean</text>
+<text x="3692" y="2034" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">hasShortAnswers : Boolean</text>
+<text x="3692" y="2056" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">pendingGradingCount : Number</text>
+<text x="3692" y="2078" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">finalizedAt : Date</text>
+<text x="3692" y="2100" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">finalizedBy : ObjectId→User  [FK]</text>
+<text x="3692" y="2122" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">partial UK in_progress : quizId+studentId  [UK]</text>
+<rect x="3680" y="2680" width="1100" height="566" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="3680" y="2680" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="4230.0" y="2700" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">generationjobs</text>
+<text x="4230.0" y="2720" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: GenerationJob</text>
+<line x1="3680" y1="2728" x2="4780" y2="2728" stroke="#000000" stroke-width="1.5"/>
+<text x="3692" y="2748" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="3692" y="2770" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">userId : ObjectId→User  [FK REQ]</text>
+<text x="3692" y="2792" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">courseId : ObjectId→Course  [FK REQ]</text>
+<text x="3692" y="2814" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">lessonId : ObjectId→Lesson  [FK]</text>
+<text x="3692" y="2836" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">targetQuizId : ObjectId→Quiz  [FK]</text>
+<text x="3692" y="2858" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">jobType : String  [REQ]</text>
+<text x="3692" y="2880" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">status : String  [REQ]</text>
+<text x="3692" y="2902" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">failureReason : String</text>
+<text x="3692" y="2924" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">sourceFilename : String  [REQ]</text>
+<text x="3692" y="2946" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">sourceByteSize : Number  [REQ]</text>
+<text x="3692" y="2968" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">sourceContentHash : String</text>
+<text x="3692" y="2990" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">extractedTextLength : Number</text>
+<text x="3692" y="3012" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">extractionWarnings[] : String  [ARR]</text>
+<text x="3692" y="3034" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">params : embed  [EMB REQ]</text>
+<text x="3692" y="3056" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">aiProvider : String</text>
+<text x="3692" y="3078" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">aiModel : String</text>
+<text x="3692" y="3100" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">aiTokensInput : Number</text>
+<text x="3692" y="3122" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">aiTokensOutput : Number</text>
+<text x="3692" y="3144" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">consentVersion : String  [REQ]</text>
+<text x="3692" y="3166" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">draftQuestions[] : embed  [EMB ARR]</text>
+<text x="3692" y="3188" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">mcqValidationSummary : embed  [EMB]</text>
+<text x="3692" y="3210" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">startedAt : Date</text>
+<text x="3692" y="3232" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">completedAt : Date</text>
+<rect x="4880" y="160" width="1100" height="258" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="4880" y="160" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="5430.0" y="180" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">tutorconfigurations</text>
+<text x="5430.0" y="200" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: TutorConfiguration</text>
+<line x1="4880" y1="208" x2="5980" y2="208" stroke="#000000" stroke-width="1.5"/>
+<text x="4892" y="228" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="4892" y="250" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">courseId : ObjectId→Course  [FK UK]</text>
+<text x="4892" y="272" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">outOfContextMessage : embed {en,ar}  [EMB]</text>
+<text x="4892" y="294" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">enabled : Boolean</text>
+<text x="4892" y="316" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">rateLimitPerHour : Number</text>
+<text x="4892" y="338" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">relevanceThreshold : Number</text>
+<text x="4892" y="360" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">maxContextChunks : Number</text>
+<text x="4892" y="382" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">updatedBy : ObjectId→User  [FK]</text>
+<text x="4892" y="404" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">updatedAt : Date</text>
+<rect x="4880" y="700" width="1100" height="346" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="4880" y="700" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="5430.0" y="720" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">tutorinteractions</text>
+<text x="5430.0" y="740" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: TutorInteraction</text>
+<line x1="4880" y1="748" x2="5980" y2="748" stroke="#000000" stroke-width="1.5"/>
+<text x="4892" y="768" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="4892" y="790" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">question : String  [REQ]</text>
+<text x="4892" y="812" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">response : String  [REQ]</text>
+<text x="4892" y="834" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">citation : String</text>
+<text x="4892" y="856" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">contextStatus : String  [REQ]</text>
+<text x="4892" y="878" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">contextChunkIds[] : String  [ARR]</text>
+<text x="4892" y="900" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">detectedLanguage : String  [REQ]</text>
+<text x="4892" y="922" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">studentId : ObjectId→User  [FK REQ]</text>
+<text x="4892" y="944" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">courseId : ObjectId→Course  [FK REQ]</text>
+<text x="4892" y="966" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">lessonId : ObjectId→Lesson  [FK REQ]</text>
+<text x="4892" y="988" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">feedback : String</text>
+<text x="4892" y="1010" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">createdAt : Date  [REQ]</text>
+<text x="4892" y="1032" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">metadata : embed  [EMB]</text>
+<rect x="4880" y="1460" width="1100" height="214" fill="#FFFFFF" stroke="#000000" stroke-width="2"/>
+<rect x="4880" y="1460" width="1100" height="48" fill="#EEEEEE" stroke="#000000" stroke-width="2"/>
+<text x="5430.0" y="1480" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">tutorreports</text>
+<text x="5430.0" y="1500" text-anchor="middle" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">Model: TutorReport</text>
+<line x1="4880" y1="1508" x2="5980" y2="1508" stroke="#000000" stroke-width="1.5"/>
+<text x="4892" y="1528" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">_id : ObjectId  [PK]</text>
+<text x="4892" y="1550" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">interactionId : ObjectId→TutorInteraction  [FK REQ]</text>
+<text x="4892" y="1572" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">studentId : ObjectId→User  [FK REQ]</text>
+<text x="4892" y="1594" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">reason : String  [REQ]</text>
+<text x="4892" y="1616" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">details : String</text>
+<text x="4892" y="1638" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">createdAt : Date  [REQ]</text>
+<text x="4892" y="1660" font-family="Times New Roman, Times, serif" font-size="13" fill="#000000">UK(interactionId,studentId) : —  [UK]</text>
+<rect x="60" y="4080" width="2400" height="280" fill="#FFFFFF" stroke="#000000" stroke-width="1.5"/>
+<text x="76" y="4108" font-family="Times New Roman, Times, serif" font-size="18" font-weight="bold" fill="#000000">Legend</text>
+<text x="76" y="4138" font-family="Times New Roman, Times, serif" font-size="14" fill="#000000">PK = Primary identifier (_id) · UK = Unique index/constraint · FK = ObjectId reference · REQ = required</text>
+<text x="76" y="4166" font-family="Times New Roman, Times, serif" font-size="14" fill="#000000">EMB = Embedded subdocument · ARR = Array field · VIR = Mongoose virtual</text>
+<text x="76" y="4194" font-family="Times New Roman, Times, serif" font-size="14" fill="#000000">Crow's Foot: 1 = one · N = many · 0..1 = zero-or-one  |  * Module.course / Attempt.answers.questionId have ObjectId without ref tag</text>
+<text x="76" y="4222" font-family="Times New Roman, Times, serif" font-size="14" fill="#000000">Enrollment UK(student,course) implements User↔Course many-to-many association</text>
+<text x="76" y="4250" font-family="Times New Roman, Times, serif" font-size="14" fill="#000000">Report.passedQuizIds[] implements Quiz↔Report many-to-many · Course.testimonials[] + Testimonial.courseId bidirectional</text>
+<text x="76" y="4278" font-family="Times New Roman, Times, serif" font-size="14" fill="#000000">ChromaDB chunk ids (TutorInteraction.contextChunkIds) are String[], not a Mongoose collection — omitted as entity</text>
+<text x="76" y="4306" font-family="Times New Roman, Times, serif" font-size="14" fill="#000000">22 collections · No invented relationships · Source: model/*.js + populate() paths in queries/ and app/</text>
+</svg>

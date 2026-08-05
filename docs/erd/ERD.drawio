@@ -1,0 +1,126 @@
+<mxfile host="app.diagrams.net" modified="2026-07-24T00:00:00.000Z" agent="LMSV2-erd" version="22.1.0" type="device">
+  <diagram id="lms-mongodb-erd" name="MongoDB Logical ERD">
+    <mxGraphModel dx="2000" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="2400" pageHeight="1800" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title" value="MongoDB Logical ERD — LMSV2 (from Mongoose model/*)&#xa;Crow's Foot · PK/UK/FK/EMB from schemas · No invented relationships" style="text;html=1;align=center;fontFamily=Times New Roman;fontSize=16;fontStyle=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="1600" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- USER -->
+        <mxCell id="User" value="users (User)&#xa;─────────────&#xa;_id : ObjectId [PK]&#xa;firstName : String [REQ]&#xa;lastName : String [REQ]&#xa;password : String [REQ]&#xa;email : String [UK REQ]&#xa;role : String [REQ]&#xa;phone, bio, socialMedia&#xa;profilePicture, designation&#xa;status, lastLogin&#xa;createdAt, updatedAt" style="shape=table;startSize=28;container=0;collapsible=0;childLayout=tableLayout;fontFamily=Times New Roman;fontSize=10;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;align=left;spacingLeft=6;" vertex="1" parent="1">
+          <mxGeometry x="40" y="90" width="220" height="220" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="Category" value="categories (Category)&#xa;─────────────&#xa;_id : ObjectId [PK]&#xa;title : String [REQ]&#xa;description : String&#xa;thumbnail : String [REQ]" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="320" y="90" width="200" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="Course" value="courses (Course)&#xa;─────────────&#xa;_id : ObjectId [PK]&#xa;title, subtitle, description&#xa;thumbnail : String&#xa;modules[] : ObjectId→Module [FK]&#xa;price : Number [REQ]&#xa;active : Boolean [REQ]&#xa;category : ObjectId→Category [FK]&#xa;instructor : ObjectId→User [FK]&#xa;testimonials[] : ObjectId→Testimonial&#xa;learning[] : String&#xa;createdOn, modifiedOn" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="320" y="230" width="240" height="220" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="Module" value="modules (Module)&#xa;─────────────&#xa;_id : ObjectId [PK]&#xa;title, description, active, slug&#xa;course : ObjectId→Course [FK*]&#xa;lessonIds[] : ObjectId→Lesson [FK]&#xa;order : Number&#xa;* no Mongoose ref tag" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="320" y="480" width="240" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="Lesson" value="lessons (Lesson)&#xa;─────────────&#xa;_id : ObjectId [PK]&#xa;title, description, duration&#xa;video_* fields, active, slug&#xa;access, order&#xa;tutorEmbedding* fields&#xa;docx* / extractedHtml / Text" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="320" y="660" width="240" height="180" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="Enrollment" value="enrollments (Enrollment)&#xa;─────────────&#xa;_id : ObjectId [PK]&#xa;enrollment_date, status, method&#xa;course : ObjectId→Course [FK]&#xa;student : ObjectId→User [FK]&#xa;payment : ObjectId→Payment [FK]&#xa;UK(student, course)" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="620" y="90" width="240" height="160" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="Payment" value="payments (Payment)&#xa;─────────────&#xa;_id : ObjectId [PK]&#xa;user : ObjectId→User [FK]&#xa;course : ObjectId→Course [FK]&#xa;sessionId, paymentIntentId&#xa;referenceId : String [UK sparse]&#xa;amount, currency, status, provider&#xa;metadata, refund*, archivedAt&#xa;createdAt, updatedAt" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="620" y="280" width="240" height="200" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="Testimonial" value="testimonials (Testimonial)&#xa;─────────────&#xa;_id : ObjectId [PK]&#xa;content, rating&#xa;courseId : ObjectId→Course [FK]&#xa;user : ObjectId→User [FK]" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="620" y="510" width="240" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="Watch" value="watches (Watch)&#xa;─────────────&#xa;_id : ObjectId [PK]&#xa;state, created_at, modified_at&#xa;lesson : ObjectId→Lesson [FK]&#xa;module : ObjectId→Module [FK]&#xa;user : ObjectId→User [FK]&#xa;lastTime : Number" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="620" y="660" width="240" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="Report" value="reports (Report)&#xa;─────────────&#xa;_id : ObjectId [PK]&#xa;totalCompletedLessons/Modules : Array&#xa;course : ObjectId→Course [FK]&#xa;student : ObjectId→User [FK]&#xa;quizAssessment : ObjectId→Assessment&#xa;passedQuizIds[] : ObjectId→Quiz [FK]&#xa;latestQuizAttemptByQuiz : Map&#xa;UK(course, student) + virtual" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="620" y="840" width="260" height="180" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="Assessment" value="assessments (Assessment)&#xa;─────────────&#xa;_id : ObjectId [PK]&#xa;assessments : Array [REQ]&#xa;otherMarks : Number [REQ]" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="620" y="1050" width="240" height="100" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="Quiz" value="quizzes (Quiz)&#xa;─────────────&#xa;_id : ObjectId [PK]&#xa;courseId : ObjectId→Course [FK]&#xa;lessonId : ObjectId→Lesson [FK]&#xa;title, description, published&#xa;passPercent, timeLimitSec, maxAttempts&#xa;shuffle*, showAnswersPolicy&#xa;createdBy : ObjectId→User [FK]&#xa;aiGenerated : Boolean&#xa;generationJobId : ObjectId→GenerationJob&#xa;timestamps" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="960" y="90" width="280" height="230" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="Question" value="questions (Question)&#xa;─────────────&#xa;_id : ObjectId [PK]&#xa;quizId : ObjectId→Quiz [FK]&#xa;type, text&#xa;options[] : embed {id,text} [EMB]&#xa;correctOptionIds[] : String&#xa;modelAnswer, explanation, sourceQuote&#xa;difficulty, points, order&#xa;timestamps" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="960" y="350" width="280" height="190" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="Attempt" value="attempts (Attempt)&#xa;─────────────&#xa;_id : ObjectId [PK]&#xa;quizId : ObjectId→Quiz [FK]&#xa;studentId : ObjectId→User [FK]&#xa;status, startedAt, expiresAt, submittedAt&#xa;answers[] : embed [EMB]&#xa;  questionId : ObjectId→Question*&#xa;  gradedBy : ObjectId→User&#xa;score, scorePercent, passed&#xa;finalizedBy : ObjectId→User&#xa;partial UK (quizId,studentId) in_progress" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="960" y="570" width="280" height="230" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="GenerationJob" value="generationjobs (GenerationJob)&#xa;─────────────&#xa;_id : ObjectId [PK]&#xa;userId, courseId, lessonId, targetQuizId [FK]&#xa;jobType, status, source*&#xa;params : embed [EMB]&#xa;draftQuestions[] : embed [EMB]&#xa;mcqValidationSummary : embed&#xa;consentVersion, ai* tokens&#xa;timestamps" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="960" y="830" width="280" height="200" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="AdminQuizConfig" value="adminquizconfigs&#xa;─────────────&#xa;quotas / max sizes&#xa;updatedBy → User [FK]&#xa;timestamps" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="40" y="350" width="220" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="AIConsent" value="aiprocessingconsents&#xa;─────────────&#xa;userId → User [FK]&#xa;consentVersion&#xa;UK(userId, consentVersion)" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="40" y="490" width="220" height="110" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="ActivityLog" value="useractivitylogs&#xa;─────────────&#xa;user → User [FK]&#xa;action, timestamp&#xa;sessionDuration, ip, UA" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="40" y="630" width="220" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="DashPref" value="dashboardpreferences&#xa;─────────────&#xa;user → User [FK]&#xa;role, layout[] embed&#xa;UK(user, role)" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="40" y="780" width="220" height="120" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="TutorConfig" value="tutorconfigurations&#xa;─────────────&#xa;courseId → Course [FK UK sparse]&#xa;outOfContextMessage embed&#xa;enabled, rateLimit, threshold&#xa;updatedBy → User" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="90" width="260" height="150" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="TutorInteraction" value="tutorinteractions&#xa;─────────────&#xa;question, response, citation&#xa;contextStatus, contextChunkIds[] String&#xa;studentId, courseId, lessonId [FK]&#xa;feedback, metadata embed" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="280" width="260" height="170" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="TutorReport" value="tutorreports&#xa;─────────────&#xa;interactionId → TutorInteraction [FK]&#xa;studentId → User [FK]&#xa;reason, details&#xa;UK(interactionId, studentId)" style="rounded=0;whiteSpace=wrap;html=1;fontFamily=Times New Roman;fontSize=10;align=left;spacingLeft=6;fillColor=#FFFFFF;strokeColor=#000000;fontColor=#000000;verticalAlign=top;" vertex="1" parent="1">
+          <mxGeometry x="1320" y="480" width="260" height="140" as="geometry"/>
+        </mxCell>
+
+        <!-- Key relationships -->
+        <mxCell id="r1" value="1:N instructor" style="endArrow=ERmany;startArrow=ERone;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=9;rounded=0;" edge="1" parent="1" source="User" target="Course"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r2" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=9;rounded=0;" edge="1" parent="1" source="Category" target="Course"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r3" value="1:N modules" style="endArrow=ERmany;startArrow=ERone;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=9;rounded=0;" edge="1" parent="1" source="Course" target="Module"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r4" value="1:N lessons" style="endArrow=ERmany;startArrow=ERone;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=9;rounded=0;" edge="1" parent="1" source="Module" target="Lesson"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r5" value="1:N student" style="endArrow=ERmany;startArrow=ERone;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=9;rounded=0;" edge="1" parent="1" source="User" target="Enrollment"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r6" value="1:N course" style="endArrow=ERmany;startArrow=ERone;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=9;rounded=0;" edge="1" parent="1" source="Course" target="Enrollment"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r7" value="0..1 payment" style="endArrow=ERzeroToOne;startArrow=ERzeroToOne;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=9;rounded=0;" edge="1" parent="1" source="Enrollment" target="Payment"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r8" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=9;rounded=0;" edge="1" parent="1" source="Course" target="Quiz"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r9" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=9;rounded=0;" edge="1" parent="1" source="Quiz" target="Question"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r10" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=9;rounded=0;" edge="1" parent="1" source="Quiz" target="Attempt"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r11" value="1:N studentId" style="endArrow=ERmany;startArrow=ERone;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=9;rounded=0;" edge="1" parent="1" source="User" target="Attempt"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r12" value="0..1 genJob" style="endArrow=ERzeroToOne;startArrow=ERzeroToOne;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=9;rounded=0;" edge="1" parent="1" source="GenerationJob" target="Quiz"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r13" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=9;rounded=0;" edge="1" parent="1" source="TutorInteraction" target="TutorReport"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r14" value="M:N passedQuizIds" style="endArrow=ERmany;startArrow=ERmany;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=9;rounded=0;dashed=1;" edge="1" parent="1" source="Quiz" target="Report"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r15" value="0..1" style="endArrow=ERzeroToOne;startArrow=ERzeroToOne;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=9;rounded=0;" edge="1" parent="1" source="Assessment" target="Report"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r16" value="0..1 sparse UK" style="endArrow=ERzeroToOne;startArrow=ERzeroToOne;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=9;rounded=0;" edge="1" parent="1" source="Course" target="TutorConfig"><mxGeometry relative="1" as="geometry"/></mxCell>
+        <mxCell id="r17" value="1:N" style="endArrow=ERmany;startArrow=ERone;html=1;strokeColor=#000000;fontFamily=Times New Roman;fontSize=9;rounded=0;" edge="1" parent="1" source="Lesson" target="TutorInteraction"><mxGeometry relative="1" as="geometry"/></mxCell>
+
+        <mxCell id="note" value="Full attribute lists, indexes, and embeds: see ERD.svg / ERD.png / ERD_SYNTHESIS.md. 22 collections. * = ObjectId without Mongoose ref (inferred from field usage)." style="text;html=1;align=left;fontFamily=Times New Roman;fontSize=10;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="40" y="1180" width="1500" height="40" as="geometry"/>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

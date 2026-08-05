@@ -1,0 +1,374 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "primaryColor": "#ffffff",
+    "primaryTextColor": "#000000",
+    "primaryBorderColor": "#000000",
+    "lineColor": "#000000",
+    "fontFamily": "Times New Roman",
+    "fontSize": "12px"
+  }
+}}%%
+%% MongoDB Logical ERD — reverse-engineered from LMSV2-main/model/*
+%% Crow's-foot style relationships from ObjectId refs + unique indexes + populate()
+
+erDiagram
+  USER {
+    ObjectId _id PK
+    String firstName
+    String lastName
+    String password
+    String email UK
+    String role
+    String phone
+    String bio
+    Object socialMedia
+    String profilePicture
+    String designation
+    String status
+    Date lastLogin
+    Date createdAt
+    Date updatedAt
+  }
+
+  CATEGORY {
+    ObjectId _id PK
+    String title
+    String description
+    String thumbnail
+  }
+
+  COURSE {
+    ObjectId _id PK
+    String title
+    String subtitle
+    String description
+    String thumbnail
+    ObjectIdArray modules FK
+    Number price
+    Boolean active
+    ObjectId category FK
+    ObjectId instructor FK
+    ObjectIdArray testimonials FK
+    StringArray learning
+    Date createdOn
+    Date modifiedOn
+  }
+
+  MODULE {
+    ObjectId _id PK
+    String title
+    String description
+    Boolean active
+    String slug
+    ObjectId course FK "no ref tag"
+    ObjectIdArray lessonIds FK
+    Number order
+  }
+
+  LESSON {
+    ObjectId _id PK
+    String title
+    String description
+    Number duration
+    String video_url
+    String videoProvider
+    String videoFilename
+    String videoUrl
+    String videoMimeType
+    Number videoSize
+    Boolean active
+    String slug
+    String access
+    Number order
+    String tutorEmbeddingStatus
+    String tutorContentHash
+    Date tutorEmbeddedAt
+    String tutorEmbeddingError
+    String docxFilename
+    String docxOriginalName
+    Number docxSize
+    Date docxUploadedAt
+    String extractedHtml
+    String extractedText
+  }
+
+  ENROLLMENT {
+    ObjectId _id PK
+    Date enrollment_date
+    String status
+    Date completion_date
+    String method
+    ObjectId course FK
+    ObjectId student FK
+    ObjectId payment FK
+    Date archivedAt
+  }
+
+  PAYMENT {
+    ObjectId _id PK
+    ObjectId user FK
+    ObjectId course FK
+    String sessionId
+    String paymentIntentId
+    String customerId
+    String referenceId UK
+    Number amount
+    String currency
+    String status
+    String provider
+    Mixed metadata
+    Number refundedAmount
+    String refundReason
+    Date paidAt
+    Date refundedAt
+    Date archivedAt
+    Date createdAt
+    Date updatedAt
+  }
+
+  TESTIMONIAL {
+    ObjectId _id PK
+    String content
+    Number rating
+    ObjectId courseId FK
+    ObjectId user FK
+  }
+
+  WATCH {
+    ObjectId _id PK
+    String state
+    Date created_at
+    Date modified_at
+    ObjectId lesson FK
+    ObjectId module FK
+    ObjectId user FK
+    Number lastTime
+  }
+
+  REPORT {
+    ObjectId _id PK
+    Array totalCompletedLessons
+    Array totalCompletedModules
+    ObjectId course FK
+    ObjectId student FK
+    ObjectId quizAssessment FK
+    ObjectIdArray passedQuizIds FK
+    Map latestQuizAttemptByQuiz
+    Date completion_date
+  }
+
+  ASSESSMENT {
+    ObjectId _id PK
+    Array assessments
+    Number otherMarks
+  }
+
+  QUIZ {
+    ObjectId _id PK
+    ObjectId courseId FK
+    ObjectId lessonId FK
+    String title
+    String description
+    Boolean published
+    Boolean required
+    Number passPercent
+    Number timeLimitSec
+    Number maxAttempts
+    Boolean shuffleQuestions
+    Boolean shuffleOptions
+    String showAnswersPolicy
+    ObjectId createdBy FK
+    Boolean aiGenerated
+    ObjectId generationJobId FK
+    Date createdAt
+    Date updatedAt
+  }
+
+  QUESTION {
+    ObjectId _id PK
+    ObjectId quizId FK
+    String type
+    String text
+    EmbeddedArray options
+    StringArray correctOptionIds
+    String modelAnswer
+    String explanation
+    String sourceQuote
+    String difficulty
+    Number points
+    Number order
+    Date createdAt
+    Date updatedAt
+  }
+
+  ATTEMPT {
+    ObjectId _id PK
+    ObjectId quizId FK
+    ObjectId studentId FK
+    String status
+    Date startedAt
+    Date expiresAt
+    Date submittedAt
+    EmbeddedArray answers
+    Number score
+    Number scorePercent
+    Boolean passed
+    Boolean hasShortAnswers
+    Number pendingGradingCount
+    Date finalizedAt
+    ObjectId finalizedBy FK
+    Date createdAt
+    Date updatedAt
+  }
+
+  GENERATIONJOB {
+    ObjectId _id PK
+    ObjectId userId FK
+    ObjectId courseId FK
+    ObjectId lessonId FK
+    ObjectId targetQuizId FK
+    String jobType
+    String status
+    String failureReason
+    String sourceFilename
+    Number sourceByteSize
+    String sourceContentHash
+    Number extractedTextLength
+    StringArray extractionWarnings
+    Embedded params
+    String aiProvider
+    String aiModel
+    Number aiTokensInput
+    Number aiTokensOutput
+    String consentVersion
+    EmbeddedArray draftQuestions
+    Embedded mcqValidationSummary
+    Date startedAt
+    Date completedAt
+    Date createdAt
+    Date updatedAt
+  }
+
+  ADMINQUIZCONFIG {
+    ObjectId _id PK
+    Number dailyQuotaPerInstructor
+    Number maxDocumentSizeBytes
+    Number maxQuestionsPerGeneration
+    Boolean sourceRetentionEnabled
+    Number sourceRetentionDays
+    ObjectId updatedBy FK
+    Date createdAt
+    Date updatedAt
+  }
+
+  AIPROCESSINGCONSENT {
+    ObjectId _id PK
+    ObjectId userId FK
+    String consentVersion
+    Date acknowledgedAt
+    String userAgent
+    Date createdAt
+  }
+
+  TUTORCONFIGURATION {
+    ObjectId _id PK
+    ObjectId courseId FK_UK_SPARSE
+    Embedded outOfContextMessage
+    Boolean enabled
+    Number rateLimitPerHour
+    Number relevanceThreshold
+    Number maxContextChunks
+    ObjectId updatedBy FK
+    Date updatedAt
+  }
+
+  TUTORINTERACTION {
+    ObjectId _id PK
+    String question
+    String response
+    String citation
+    String contextStatus
+    StringArray contextChunkIds
+    String detectedLanguage
+    ObjectId studentId FK
+    ObjectId courseId FK
+    ObjectId lessonId FK
+    String feedback
+    Date createdAt
+    Embedded metadata
+  }
+
+  TUTORREPORT {
+    ObjectId _id PK
+    ObjectId interactionId FK
+    ObjectId studentId FK
+    String reason
+    String details
+    Date createdAt
+  }
+
+  USERACTIVITYLOG {
+    ObjectId _id PK
+    ObjectId user FK
+    String action
+    Date timestamp
+    Number sessionDuration
+    String ipAddress
+    String userAgent
+    Date archivedAt
+  }
+
+  DASHBOARDPREFERENCE {
+    ObjectId _id PK
+    ObjectId user FK
+    String role
+    EmbeddedArray layout
+    String defaultDateRange
+    Embedded customDateRange
+    StringArray hiddenWidgets
+    Date createdAt
+    Date updatedAt
+  }
+
+  USER ||--o{ COURSE : "instructor (1:N)"
+  CATEGORY ||--o{ COURSE : "category (1:N)"
+  COURSE ||--o{ MODULE : "modules[] + Module.course (1:N)"
+  MODULE ||--o{ LESSON : "lessonIds[] (1:N)"
+  USER ||--o{ ENROLLMENT : "student (1:N)"
+  COURSE ||--o{ ENROLLMENT : "course (1:N)"
+  ENROLLMENT }o--o| PAYMENT : "payment (0..1:0..1)"
+  USER ||--o{ PAYMENT : "user (1:N)"
+  COURSE ||--o{ PAYMENT : "course (1:N)"
+  USER ||--o{ TESTIMONIAL : "user (1:N)"
+  COURSE ||--o{ TESTIMONIAL : "courseId + testimonials[] (1:N)"
+  USER ||--o{ WATCH : "user (1:N)"
+  LESSON ||--o{ WATCH : "lesson (1:N)"
+  MODULE ||--o{ WATCH : "module (1:N)"
+  USER ||--o{ REPORT : "student unique(course,student)"
+  COURSE ||--o{ REPORT : "course (1:N)"
+  ASSESSMENT ||--o| REPORT : "quizAssessment (1:0..1)"
+  QUIZ }o--o{ REPORT : "passedQuizIds[] (M:N)"
+  COURSE ||--o{ QUIZ : "courseId (1:N)"
+  LESSON ||--o{ QUIZ : "lessonId (0..1:N)"
+  USER ||--o{ QUIZ : "createdBy (1:N)"
+  QUIZ ||--o{ QUESTION : "quizId (1:N)"
+  QUIZ ||--o{ ATTEMPT : "quizId (1:N)"
+  USER ||--o{ ATTEMPT : "studentId (1:N)"
+  USER ||--o{ ATTEMPT : "finalizedBy (1:N)"
+  USER ||--o{ GENERATIONJOB : "userId (1:N)"
+  COURSE ||--o{ GENERATIONJOB : "courseId (1:N)"
+  LESSON ||--o{ GENERATIONJOB : "lessonId (0..1:N)"
+  QUIZ ||--o{ GENERATIONJOB : "targetQuizId (0..1:N)"
+  GENERATIONJOB ||--o| QUIZ : "generationJobId (0..1:0..1)"
+  USER ||--o{ ADMINQUIZCONFIG : "updatedBy (1:N)"
+  USER ||--o{ AIPROCESSINGCONSENT : "userId unique(userId,version)"
+  COURSE ||--o| TUTORCONFIGURATION : "courseId sparse unique (0..1:0..1)"
+  USER ||--o{ TUTORCONFIGURATION : "updatedBy (1:N)"
+  USER ||--o{ TUTORINTERACTION : "studentId (1:N)"
+  COURSE ||--o{ TUTORINTERACTION : "courseId (1:N)"
+  LESSON ||--o{ TUTORINTERACTION : "lessonId (1:N)"
+  TUTORINTERACTION ||--o{ TUTORREPORT : "interactionId (1:N)"
+  USER ||--o{ TUTORREPORT : "studentId unique(interaction,student)"
+  USER ||--o{ USERACTIVITYLOG : "user (1:N)"
+  USER ||--o{ DASHBOARDPREFERENCE : "user unique(user,role)"

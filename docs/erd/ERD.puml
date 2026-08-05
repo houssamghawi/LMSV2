@@ -1,0 +1,424 @@
+@startuml LMS_MongoDB_Logical_ERD
+' Logical ERD reverse-engineered from LMSV2-main/model/* Mongoose schemas
+' Style: academic black/white, Crow's Foot
+
+skinparam backgroundColor #FFFFFF
+skinparam shadowing false
+skinparam defaultFontName "Times New Roman"
+skinparam class {
+  BackgroundColor #FFFFFF
+  BorderColor #000000
+  FontColor #000000
+  HeaderBackgroundColor #EEEEEE
+  ArrowColor #000000
+}
+skinparam linetype ortho
+
+title MongoDB Logical Entity-Relationship Diagram\nLMSV2 — Collections from Mongoose Models (ref / unique / embed)
+
+entity "users\n(User)" as User {
+  * _id : ObjectId <<PK>>
+  --
+  * firstName : String
+  * lastName : String
+  * password : String
+  * email : String <<UK>>
+  * role : String
+  phone : String
+  bio : String
+  socialMedia : Object
+  profilePicture : String
+  designation : String
+  status : String
+  lastLogin : Date
+  createdAt : Date
+  updatedAt : Date
+}
+
+entity "categories\n(Category)" as Category {
+  * _id : ObjectId <<PK>>
+  --
+  * title : String
+  description : String
+  * thumbnail : String
+}
+
+entity "courses\n(Course)" as Course {
+  * _id : ObjectId <<PK>>
+  --
+  * title : String
+  subtitle : String
+  * description : String
+  thumbnail : String
+  modules : ObjectId[] <<FK→Module>>
+  * price : Number
+  * active : Boolean
+  category : ObjectId <<FK→Category>>
+  instructor : ObjectId <<FK→User>>
+  testimonials : ObjectId[] <<FK→Testimonial>>
+  learning : String[]
+  * createdOn : Date
+  * modifiedOn : Date
+}
+
+entity "modules\n(Module)" as Module {
+  * _id : ObjectId <<PK>>
+  --
+  * title : String
+  description : String
+  * active : Boolean
+  * slug : String
+  * course : ObjectId <<FK Course, no ref>>
+  lessonIds : ObjectId[] <<FK→Lesson>>
+  order : Number
+}
+
+entity "lessons\n(Lesson)" as Lesson {
+  * _id : ObjectId <<PK>>
+  --
+  * title : String
+  description : String
+  * duration : Number
+  video_url : String
+  videoProvider : String
+  videoFilename : String
+  videoUrl : String
+  videoMimeType : String
+  videoSize : Number
+  * active : Boolean
+  * slug : String
+  * access : String
+  * order : Number
+  tutorEmbeddingStatus : String
+  tutorContentHash : String
+  tutorEmbeddedAt : Date
+  tutorEmbeddingError : String
+  docxFilename : String
+  docxOriginalName : String
+  docxSize : Number
+  docxUploadedAt : Date
+  extractedHtml : String
+  extractedText : String
+}
+
+entity "enrollments\n(Enrollment)" as Enrollment {
+  * _id : ObjectId <<PK>>
+  --
+  * enrollment_date : Date
+  * status : String
+  completion_date : Date
+  * method : String
+  * course : ObjectId <<FK→Course>>
+  * student : ObjectId <<FK→User>>
+  payment : ObjectId <<FK→Payment>>
+  archivedAt : Date
+  --
+  <<UK student+course>>
+}
+
+entity "payments\n(Payment)" as Payment {
+  * _id : ObjectId <<PK>>
+  --
+  * user : ObjectId <<FK→User>>
+  * course : ObjectId <<FK→Course>>
+  sessionId : String
+  paymentIntentId : String
+  customerId : String
+  referenceId : String <<UK sparse>>
+  * amount : Number
+  * currency : String
+  * status : String
+  * provider : String
+  metadata : Mixed
+  refundedAmount : Number
+  refundReason : String
+  paidAt : Date
+  refundedAt : Date
+  archivedAt : Date
+  createdAt : Date
+  updatedAt : Date
+}
+
+entity "testimonials\n(Testimonial)" as Testimonial {
+  * _id : ObjectId <<PK>>
+  --
+  * content : String
+  * rating : Number
+  courseId : ObjectId <<FK→Course>>
+  user : ObjectId <<FK→User>>
+}
+
+entity "watches\n(Watch)" as Watch {
+  * _id : ObjectId <<PK>>
+  --
+  * state : String
+  * created_at : Date
+  * modified_at : Date
+  lesson : ObjectId <<FK→Lesson>>
+  module : ObjectId <<FK→Module>>
+  user : ObjectId <<FK→User>>
+  * lastTime : Number
+}
+
+entity "reports\n(Report)" as Report {
+  * _id : ObjectId <<PK>>
+  --
+  * totalCompletedLessons : Array
+  * totalCompletedModules : Array
+  course : ObjectId <<FK→Course>>
+  student : ObjectId <<FK→User>>
+  quizAssessment : ObjectId <<FK→Assessment>>
+  passedQuizIds : ObjectId[] <<FK→Quiz>>
+  latestQuizAttemptByQuiz : Map
+  completion_date : Date
+  --
+  <<UK course+student>>
+  <<virtual totalCompletedModeules>>
+}
+
+entity "assessments\n(Assessment)" as Assessment {
+  * _id : ObjectId <<PK>>
+  --
+  * assessments : Array
+  * otherMarks : Number
+}
+
+entity "quizzes\n(Quiz)" as Quiz {
+  * _id : ObjectId <<PK>>
+  --
+  * courseId : ObjectId <<FK→Course>>
+  lessonId : ObjectId <<FK→Lesson>>
+  * title : String
+  description : String
+  published : Boolean
+  required : Boolean
+  passPercent : Number
+  timeLimitSec : Number
+  maxAttempts : Number
+  shuffleQuestions : Boolean
+  shuffleOptions : Boolean
+  showAnswersPolicy : String
+  * createdBy : ObjectId <<FK→User>>
+  aiGenerated : Boolean
+  generationJobId : ObjectId <<FK→GenerationJob>>
+  createdAt : Date
+  updatedAt : Date
+}
+
+entity "questions\n(Question)" as Question {
+  * _id : ObjectId <<PK>>
+  --
+  * quizId : ObjectId <<FK→Quiz>>
+  * type : String
+  * text : String
+  * options : <<embed option[]>>
+  * correctOptionIds : String[]
+  modelAnswer : String
+  explanation : String
+  sourceQuote : String
+  difficulty : String
+  points : Number
+  * order : Number
+  createdAt : Date
+  updatedAt : Date
+}
+
+entity "attempts\n(Attempt)" as Attempt {
+  * _id : ObjectId <<PK>>
+  --
+  * quizId : ObjectId <<FK→Quiz>>
+  * studentId : ObjectId <<FK→User>>
+  status : String
+  * startedAt : Date
+  expiresAt : Date
+  submittedAt : Date
+  answers : <<embed answer[]>>
+  score : Number
+  scorePercent : Number
+  passed : Boolean
+  hasShortAnswers : Boolean
+  pendingGradingCount : Number
+  finalizedAt : Date
+  finalizedBy : ObjectId <<FK→User>>
+  createdAt : Date
+  updatedAt : Date
+  --
+  <<partial UK quizId+studentId where in_progress>>
+}
+
+entity "generationjobs\n(GenerationJob)" as GenerationJob {
+  * _id : ObjectId <<PK>>
+  --
+  * userId : ObjectId <<FK→User>>
+  * courseId : ObjectId <<FK→Course>>
+  lessonId : ObjectId <<FK→Lesson>>
+  targetQuizId : ObjectId <<FK→Quiz>>
+  * jobType : String
+  * status : String
+  failureReason : String
+  * sourceFilename : String
+  * sourceByteSize : Number
+  sourceContentHash : String
+  extractedTextLength : Number
+  extractionWarnings : String[]
+  * params : <<embed>>
+  aiProvider : String
+  aiModel : String
+  aiTokensInput : Number
+  aiTokensOutput : Number
+  * consentVersion : String
+  draftQuestions : <<embed[]>>
+  mcqValidationSummary : <<embed>>
+  startedAt : Date
+  completedAt : Date
+  createdAt : Date
+  updatedAt : Date
+}
+
+entity "adminquizconfigs\n(AdminQuizConfig)" as AdminQuizConfig {
+  * _id : ObjectId <<PK>>
+  --
+  * dailyQuotaPerInstructor : Number
+  * maxDocumentSizeBytes : Number
+  * maxQuestionsPerGeneration : Number
+  * sourceRetentionEnabled : Boolean
+  sourceRetentionDays : Number
+  * updatedBy : ObjectId <<FK→User>>
+  createdAt : Date
+  updatedAt : Date
+}
+
+entity "aiprocessingconsents\n(AIProcessingConsent)" as AIConsent {
+  * _id : ObjectId <<PK>>
+  --
+  * userId : ObjectId <<FK→User>>
+  * consentVersion : String
+  * acknowledgedAt : Date
+  userAgent : String
+  createdAt : Date
+  --
+  <<UK userId+consentVersion>>
+}
+
+entity "tutorconfigurations\n(TutorConfiguration)" as TutorConfig {
+  * _id : ObjectId <<PK>>
+  --
+  courseId : ObjectId <<FK→Course UK sparse>>
+  outOfContextMessage : <<embed en/ar>>
+  enabled : Boolean
+  rateLimitPerHour : Number
+  relevanceThreshold : Number
+  maxContextChunks : Number
+  updatedBy : ObjectId <<FK→User>>
+  updatedAt : Date
+}
+
+entity "tutorinteractions\n(TutorInteraction)" as TutorInteraction {
+  * _id : ObjectId <<PK>>
+  --
+  * question : String
+  * response : String
+  citation : String
+  * contextStatus : String
+  contextChunkIds : String[]
+  * detectedLanguage : String
+  * studentId : ObjectId <<FK→User>>
+  * courseId : ObjectId <<FK→Course>>
+  * lessonId : ObjectId <<FK→Lesson>>
+  feedback : String
+  * createdAt : Date
+  metadata : <<embed>>
+}
+
+entity "tutorreports\n(TutorReport)" as TutorReport {
+  * _id : ObjectId <<PK>>
+  --
+  * interactionId : ObjectId <<FK→TutorInteraction>>
+  * studentId : ObjectId <<FK→User>>
+  * reason : String
+  details : String
+  * createdAt : Date
+  --
+  <<UK interactionId+studentId>>
+}
+
+entity "useractivitylogs\n(UserActivityLog)" as ActivityLog {
+  * _id : ObjectId <<PK>>
+  --
+  * user : ObjectId <<FK→User>>
+  * action : String
+  * timestamp : Date
+  sessionDuration : Number
+  ipAddress : String
+  userAgent : String
+  archivedAt : Date
+}
+
+entity "dashboardpreferences\n(DashboardPreference)" as DashPref {
+  * _id : ObjectId <<PK>>
+  --
+  * user : ObjectId <<FK→User>>
+  * role : String
+  layout : <<embed widget[]>>
+  defaultDateRange : String
+  customDateRange : <<embed>>
+  hiddenWidgets : String[]
+  createdAt : Date
+  updatedAt : Date
+  --
+  <<UK user+role>>
+}
+
+' Crow's Foot relationships (from schema refs + unique constraints)
+User ||--o{ Course : "instructor"
+Category ||--o{ Course : "category"
+Course ||--o{ Module : "1:N modules"
+Module ||--o{ Lesson : "1:N lessonIds"
+User ||--o{ Enrollment : "student"
+Course ||--o{ Enrollment : "course"
+Enrollment |o--o| Payment : "payment"
+User ||--o{ Payment : "user"
+Course ||--o{ Payment : "course"
+User ||--o{ Testimonial : "user"
+Course ||--o{ Testimonial : "courseId"
+User ||--o{ Watch : "user"
+Lesson ||--o{ Watch : "lesson"
+Module ||--o{ Watch : "module"
+User ||--o{ Report : "student"
+Course ||--o{ Report : "course"
+Assessment |o--o| Report : "quizAssessment"
+Quiz }o--o{ Report : "passedQuizIds M:N"
+Course ||--o{ Quiz : "courseId"
+Lesson ||--o{ Quiz : "lessonId"
+User ||--o{ Quiz : "createdBy"
+Quiz ||--o{ Question : "quizId"
+Quiz ||--o{ Attempt : "quizId"
+User ||--o{ Attempt : "studentId"
+User ||--o{ GenerationJob : "userId"
+Course ||--o{ GenerationJob : "courseId"
+Lesson ||--o{ GenerationJob : "lessonId"
+Quiz ||--o{ GenerationJob : "targetQuizId"
+GenerationJob |o--o| Quiz : "generationJobId"
+User ||--o{ AdminQuizConfig : "updatedBy"
+User ||--o{ AIConsent : "userId"
+Course |o--o| TutorConfig : "courseId sparse UK"
+User ||--o{ TutorConfig : "updatedBy"
+User ||--o{ TutorInteraction : "studentId"
+Course ||--o{ TutorInteraction : "courseId"
+Lesson ||--o{ TutorInteraction : "lessonId"
+TutorInteraction ||--o{ TutorReport : "interactionId"
+User ||--o{ TutorReport : "studentId"
+User ||--o{ ActivityLog : "user"
+User ||--o{ DashPref : "user"
+
+note bottom of Module
+  Module.course is ObjectId without Mongoose ref;
+  treated as FK to Course from field usage + Course.modules[].
+end note
+
+note bottom of Attempt
+  answers[].questionId is ObjectId without ref;
+  logically references questions._id (embedded array).
+end note
+
+@enduml
