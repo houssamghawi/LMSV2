@@ -1,0 +1,685 @@
+{
+  "tech_stack": [
+    "JavaScript",
+    "Next.js 15",
+    "React 18",
+    "Node.js",
+    "MongoDB",
+    "Mongoose ODM",
+    "NextAuth v5",
+    "Tailwind CSS",
+    "shadcn/ui"
+  ],
+  "features": [
+    {
+      "name": "User Authentication",
+      "description": "Complete authentication system with login, registration, and role-based access control using NextAuth v5. Supports JWT sessions with 30-day expiry, rate limiting, and status-based access.",
+      "files": [
+        "auth.js",
+        "auth.config.js",
+        "middleware.js",
+        "app/api/auth/[...nextauth]/route.js",
+        "app/api/register/route.js",
+        "app/login/page.jsx",
+        "app/register/page.jsx"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {
+          "/api/auth/signin": {
+            "post": {
+              "summary": "User login",
+              "tags": ["Authentication"],
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "email": {"type": "string", "format": "email"},
+                        "password": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {"description": "Login successful"},
+                "401": {"description": "Invalid credentials"},
+                "429": {"description": "Too many login attempts"}
+              }
+            }
+          },
+          "/api/register": {
+            "post": {
+              "summary": "User registration",
+              "tags": ["Authentication"],
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "required": ["firstName", "lastName", "email", "password"],
+                      "properties": {
+                        "firstName": {"type": "string"},
+                        "lastName": {"type": "string"},
+                        "email": {"type": "string", "format": "email"},
+                        "password": {"type": "string", "minLength": 8},
+                        "confirmPassword": {"type": "string"},
+                        "userRole": {"type": "string", "enum": ["student", "instructor"]}
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "201": {"description": "Account created successfully"},
+                "400": {"description": "Validation error"},
+                "409": {"description": "Email already exists"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Course Management",
+      "description": "Complete course CRUD operations for instructors. Create, edit, publish/unpublish, and delete courses. Includes categorization, pricing, thumbnails, and module management.",
+      "files": [
+        "app/actions/course.js",
+        "app/actions/admin-courses.js",
+        "app/dashboard/courses/page.jsx",
+        "app/dashboard/courses/add/page.jsx",
+        "app/dashboard/courses/[courseId]/page.jsx",
+        "model/course-model.js",
+        "queries/courses.js"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {
+          "/dashboard/courses": {
+            "get": {
+              "summary": "List instructor's courses",
+              "tags": ["Courses"],
+              "security": [{"sessionAuth": []}],
+              "responses": {
+                "200": {"description": "Course list retrieved"},
+                "401": {"description": "Authentication required"},
+                "403": {"description": "Not an instructor"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Module Management",
+      "description": "Organize courses into modules. Create, edit, reorder, publish/unpublish modules. Each module contains multiple lessons.",
+      "files": [
+        "app/actions/module.js",
+        "app/dashboard/courses/[courseId]/modules/page.jsx",
+        "model/module.model.js",
+        "queries/modules.js"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {
+          "/dashboard/courses/{courseId}/modules": {
+            "get": {
+              "summary": "List course modules",
+              "tags": ["Modules"],
+              "security": [{"sessionAuth": []}],
+              "parameters": [
+                {
+                  "name": "courseId",
+                  "in": "path",
+                  "required": true,
+                  "schema": {"type": "string"}
+                }
+              ],
+              "responses": {
+                "200": {"description": "Modules retrieved"},
+                "403": {"description": "Not course owner"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Lesson Management",
+      "description": "Create and manage lessons within modules. Support for video uploads (local and external), lesson ordering, and publishing control.",
+      "files": [
+        "app/actions/lesson.js",
+        "app/dashboard/courses/[courseId]/modules/[moduleId]/page.jsx",
+        "model/lesson.model.js",
+        "queries/lessons.js",
+        "app/api/upload/video/route.js"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {
+          "/api/upload/video": {
+            "post": {
+              "summary": "Upload lesson video",
+              "tags": ["Lessons"],
+              "security": [{"sessionAuth": []}],
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "multipart/form-data": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "video": {"type": "string", "format": "binary"},
+                        "lessonId": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {"description": "Video uploaded successfully"},
+                "413": {"description": "File too large"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Course Enrollment",
+      "description": "Student enrollment system supporting free and paid courses. Integration with MockPay for payment simulation. Enrollment tracking and status management.",
+      "files": [
+        "app/actions/enrollment.js",
+        "app/(main)/checkout/mock/page.jsx",
+        "app/(main)/enroll-success/page.jsx",
+        "app/api/payments/mock/confirm/route.js",
+        "app/api/payments/status/route.js",
+        "model/enrollment-model.js",
+        "model/payment-model.js",
+        "queries/enrollments.js"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {
+          "/api/payments/mock/confirm": {
+            "post": {
+              "summary": "MockPay payment webhook",
+              "tags": ["Enrollment", "Payments"],
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "referenceId": {"type": "string"},
+                        "userId": {"type": "string"},
+                        "courseId": {"type": "string"},
+                        "amount": {"type": "number"},
+                        "status": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {"description": "Payment processed and enrollment created"},
+                "400": {"description": "Invalid payment data"}
+              }
+            }
+          },
+          "/api/payments/status": {
+            "get": {
+              "summary": "Check payment status",
+              "tags": ["Payments"],
+              "parameters": [
+                {
+                  "name": "referenceId",
+                  "in": "query",
+                  "schema": {"type": "string"}
+                }
+              ],
+              "responses": {
+                "200": {"description": "Payment status retrieved"},
+                "404": {"description": "Payment not found"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Quiz System V2",
+      "description": "Comprehensive quiz system with multiple question types (single choice, multiple choice, true/false). Features include time limits, max attempts, question shuffling, auto-grading, pass percentage requirements, and configurable answer visibility.",
+      "files": [
+        "app/actions/quizv2.js",
+        "app/actions/quizProgressv2.js",
+        "app/dashboard/courses/[courseId]/quizzes/page.jsx",
+        "app/dashboard/courses/[courseId]/quizzes/new/page.jsx",
+        "app/dashboard/courses/[courseId]/quizzes/[quizId]/page.jsx",
+        "app/(main)/courses/[id]/quizzes/[quizId]/page.jsx",
+        "app/(main)/courses/[id]/quizzes/[quizId]/result/page.jsx",
+        "model/quizv2-model.js",
+        "model/questionv2-model.js",
+        "model/attemptv2-model.js",
+        "queries/quizv2.js"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {
+          "/api/quizv2/attempts/{attemptId}": {
+            "get": {
+              "summary": "Get quiz attempt details",
+              "tags": ["Quizzes"],
+              "security": [{"sessionAuth": []}],
+              "parameters": [
+                {
+                  "name": "attemptId",
+                  "in": "path",
+                  "required": true,
+                  "schema": {"type": "string"}
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Attempt details retrieved",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "attemptId": {"type": "string"},
+                          "quizId": {"type": "string"},
+                          "status": {"type": "string", "enum": ["in_progress", "submitted", "expired"]},
+                          "score": {"type": "number"},
+                          "scorePercent": {"type": "number"},
+                          "passed": {"type": "boolean"},
+                          "answers": {"type": "array"}
+                        }
+                      }
+                    }
+                  }
+                },
+                "403": {"description": "Not your attempt"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Progress Tracking",
+      "description": "Track student progress through lessons and modules. Records lesson watch time, completion status, and generates progress reports.",
+      "files": [
+        "app/api/lesson-watch/route.js",
+        "model/watch-model.js",
+        "model/report-model.js",
+        "queries/reports.js",
+        "lib/certificate-helpers.js"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {
+          "/api/lesson-watch": {
+            "post": {
+              "summary": "Track lesson viewing progress",
+              "tags": ["Progress"],
+              "security": [{"sessionAuth": []}],
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "required": ["lessonId", "moduleId", "lastTime", "state"],
+                      "properties": {
+                        "lessonId": {"type": "string"},
+                        "moduleId": {"type": "string"},
+                        "lastTime": {"type": "number", "description": "Last watched timestamp in seconds"},
+                        "state": {"type": "string", "enum": ["started", "in-progress", "completed"]}
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {"description": "Watch record updated"},
+                "400": {"description": "Invalid input"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Certificate Generation",
+      "description": "Auto-generate PDF certificates when students complete courses (100% progress + all required quizzes passed). Includes rate limiting and access verification.",
+      "files": [
+        "app/api/certificates/[courseId]/route.js",
+        "lib/certificate-helpers.js",
+        "model/report-model.js"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {
+          "/api/certificates/{courseId}": {
+            "get": {
+              "summary": "Download course completion certificate",
+              "tags": ["Certificates"],
+              "security": [{"sessionAuth": []}],
+              "parameters": [
+                {
+                  "name": "courseId",
+                  "in": "path",
+                  "required": true,
+                  "schema": {"type": "string"}
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Certificate PDF generated",
+                  "content": {
+                    "application/pdf": {
+                      "schema": {
+                        "type": "string",
+                        "format": "binary"
+                      }
+                    }
+                  }
+                },
+                "403": {"description": "Course not completed"},
+                "429": {"description": "Rate limit exceeded"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Video Streaming",
+      "description": "Stream lesson videos with HTTP Range support for seeking. Supports local and external video sources.",
+      "files": [
+        "app/api/videos/[filename]/route.js",
+        "components/video-player.jsx"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {
+          "/api/videos/{filename}": {
+            "get": {
+              "summary": "Stream video file",
+              "tags": ["Videos"],
+              "security": [{"sessionAuth": []}],
+              "parameters": [
+                {
+                  "name": "filename",
+                  "in": "path",
+                  "required": true,
+                  "schema": {"type": "string"}
+                },
+                {
+                  "name": "Range",
+                  "in": "header",
+                  "schema": {"type": "string", "example": "bytes=0-1023"}
+                }
+              ],
+              "responses": {
+                "206": {
+                  "description": "Partial content (video stream)",
+                  "headers": {
+                    "Content-Range": {"schema": {"type": "string"}},
+                    "Accept-Ranges": {"schema": {"type": "string", "default": "bytes"}}
+                  }
+                },
+                "200": {"description": "Full video content"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Admin Dashboard",
+      "description": "Comprehensive admin panel for managing users, courses, enrollments, payments, and reviews. Includes analytics, role/status management, and bulk operations.",
+      "files": [
+        "app/admin/page.jsx",
+        "app/admin/users/page.jsx",
+        "app/admin/courses/page.jsx",
+        "app/admin/enrollments/page.jsx",
+        "app/admin/payments/page.jsx",
+        "app/admin/reviews/page.jsx",
+        "app/admin/analytics/page.jsx",
+        "app/actions/admin.js",
+        "app/actions/admin-categories.js",
+        "queries/admin.js"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {
+          "/admin": {
+            "get": {
+              "summary": "Admin dashboard overview",
+              "tags": ["Admin"],
+              "security": [{"sessionAuth": []}],
+              "responses": {
+                "200": {
+                  "description": "Dashboard statistics",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "totalUsers": {"type": "number"},
+                          "totalCourses": {"type": "number"},
+                          "totalEnrollments": {"type": "number"},
+                          "totalRevenue": {"type": "number"}
+                        }
+                      }
+                    }
+                  }
+                },
+                "403": {"description": "Admin access required"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "User Profile Management",
+      "description": "User account settings including profile editing, password change, and avatar upload.",
+      "files": [
+        "app/actions/account.js",
+        "app/(main)/account/page.jsx",
+        "app/api/profile/avatar/route.js",
+        "app/api/me/route.js",
+        "model/user-model.js"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {
+          "/api/me": {
+            "get": {
+              "summary": "Get current user profile",
+              "tags": ["User Profile"],
+              "security": [{"sessionAuth": []}],
+              "responses": {
+                "200": {
+                  "description": "User profile retrieved",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "object",
+                        "properties": {
+                          "id": {"type": "string"},
+                          "email": {"type": "string"},
+                          "firstName": {"type": "string"},
+                          "lastName": {"type": "string"},
+                          "role": {"type": "string"},
+                          "status": {"type": "string"}
+                        }
+                      }
+                    }
+                  }
+                },
+                "401": {"description": "Not authenticated"}
+              }
+            }
+          },
+          "/api/profile/avatar": {
+            "post": {
+              "summary": "Upload profile picture",
+              "tags": ["User Profile"],
+              "security": [{"sessionAuth": []}],
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "multipart/form-data": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "avatar": {"type": "string", "format": "binary"}
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {"description": "Avatar uploaded successfully"},
+                "413": {"description": "File too large"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Course Reviews & Testimonials",
+      "description": "Students can leave reviews and ratings for courses. Admin moderation capabilities.",
+      "files": [
+        "app/actions/review.js",
+        "app/admin/reviews/page.jsx",
+        "model/testimonial-model.js",
+        "queries/testimonials.js"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {}
+      }
+    },
+    {
+      "name": "Category Management",
+      "description": "Organize courses by categories. Admin-managed with CRUD operations.",
+      "files": [
+        "app/actions/admin-categories.js",
+        "app/admin/categories/page.jsx",
+        "app/(main)/categories/[id]/page.jsx",
+        "model/category-model.js",
+        "queries/categories.js"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {}
+      }
+    },
+    {
+      "name": "File Upload System",
+      "description": "Handle image and document uploads for courses, lessons, and user profiles. Includes validation and rate limiting.",
+      "files": [
+        "app/api/upload/route.js",
+        "app/api/upload/video/route.js",
+        "components/file-upload.jsx"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {
+          "/api/upload": {
+            "post": {
+              "summary": "Upload image or document",
+              "tags": ["File Upload"],
+              "security": [{"sessionAuth": []}],
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "multipart/form-data": {
+                    "schema": {
+                      "type": "object",
+                      "properties": {
+                        "file": {"type": "string", "format": "binary"},
+                        "destination": {"type": "string"}
+                      }
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {"description": "File uploaded successfully"},
+                "400": {"description": "Invalid file type"},
+                "413": {"description": "File too large"},
+                "429": {"description": "Rate limit exceeded"}
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "name": "Course Browse & Search",
+      "description": "Public course catalog with filtering, searching, and category browsing. Course detail pages with curriculum preview.",
+      "files": [
+        "app/(main)/page.js",
+        "app/(main)/courses/page.jsx",
+        "app/(main)/courses/[id]/page.jsx",
+        "queries/courses.js"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {}
+      }
+    },
+    {
+      "name": "Lesson Player",
+      "description": "Video player interface for enrolled students with progress tracking, module navigation, and quiz access.",
+      "files": [
+        "app/(main)/courses/[id]/lesson/page.jsx",
+        "components/video-player.jsx",
+        "components/course-progress.jsx"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {}
+      }
+    },
+    {
+      "name": "Instructor Dashboard",
+      "description": "Dashboard for instructors to manage their courses, view enrollments, and track student progress.",
+      "files": [
+        "app/dashboard/page.jsx",
+        "app/dashboard/courses/page.jsx",
+        "queries/courses.js"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {}
+      }
+    },
+    {
+      "name": "Authorization & Permissions",
+      "description": "Role-based access control system with ownership verification to prevent IDOR attacks. Admin override capabilities.",
+      "files": [
+        "lib/authorization.js",
+        "lib/permissions.js",
+        "lib/auth-helpers.js",
+        "middleware.js"
+      ],
+      "api_doc": {
+        "openapi": "3.0.0",
+        "paths": {}
+      }
+    }
+  ]
+}

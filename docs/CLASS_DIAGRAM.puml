@@ -1,0 +1,623 @@
+@startuml LMS_Class_Diagram
+!theme plain
+skinparam packageStyle rectangle
+skinparam classAttributeIconSize 0
+
+title LMS - Complete UML Class Diagram
+
+' ============================================
+' PACKAGE: Models (Domain Layer)
+' ============================================
+package "Models" <<Model>> {
+  
+  class User <<Model>> {
+    +_id: ObjectId
+    +email: String {unique}
+    +firstName: String
+    +lastName: String
+    +password: String
+    +role: Enum {admin, instructor, student}
+    +status: Enum {active, inactive, suspended}
+    +phone: String
+    +bio: String
+    +profilePicture: String
+    +designation: String
+    +lastLogin: Date
+    +createdAt: Date
+    +updatedAt: Date
+  }
+  
+  class Category <<Model>> {
+    +_id: ObjectId
+    +title: String
+    +description: String
+    +thumbnail: String
+  }
+  
+  class Course <<Model>> {
+    +_id: ObjectId
+    +title: String
+    +subtitle: String
+    +description: String
+    +thumbnail: String
+    +modules: ObjectId[]
+    +price: Number
+    +active: Boolean
+    +category: ObjectId {ref: Category}
+    +instructor: ObjectId {ref: User}
+    +testimonials: ObjectId[] {ref: Testimonial}
+    +learning: String[]
+    +createdOn: Date
+    +modifiedOn: Date
+  }
+  
+  class Module <<Model>> {
+    +_id: ObjectId
+    +title: String
+    +description: String
+    +active: Boolean
+    +slug: String
+    +course: ObjectId
+    +lessonIds: ObjectId[] {ref: Lesson}
+    +order: Number
+  }
+  
+  class Lesson <<Model>> {
+    +_id: ObjectId
+    +title: String
+    +description: String
+    +duration: Number
+    +video_url: String
+    +videoProvider: Enum {local, external}
+    +videoFilename: String
+    +videoUrl: String
+    +active: Boolean
+    +slug: String
+    +access: String
+    +order: Number
+  }
+  
+  class Enrollment <<Model>> {
+    +_id: ObjectId
+    +enrollment_date: Date
+    +status: Enum {not-started, in-progress, completed}
+    +completion_date: Date
+    +method: Enum {stripe, free, manual, mockpay}
+    +course: ObjectId {ref: Course}
+    +student: ObjectId {ref: User}
+    +payment: ObjectId {ref: Payment}
+  }
+  
+  class Payment <<Model>> {
+    +_id: ObjectId
+    +user: ObjectId {ref: User}
+    +course: ObjectId {ref: Course}
+    +sessionId: String
+    +paymentIntentId: String
+    +customerId: String
+    +referenceId: String {unique}
+    +amount: Number
+    +currency: String
+    +status: Enum {pending, succeeded, failed, refunded, ...}
+    +provider: Enum {stripe, mockpay}
+    +metadata: Object
+    +refundedAmount: Number
+    +paidAt: Date
+    +createdAt: Date
+    +updatedAt: Date
+  }
+  
+  class Quiz <<Model>> {
+    +_id: ObjectId
+    +courseId: ObjectId {ref: Course}
+    +lessonId: ObjectId {ref: Lesson}
+    +title: String
+    +description: String
+    +published: Boolean
+    +required: Boolean
+    +passPercent: Number
+    +timeLimitSec: Number
+    +maxAttempts: Number
+    +shuffleQuestions: Boolean
+    +shuffleOptions: Boolean
+    +showAnswersPolicy: Enum
+    +createdBy: ObjectId {ref: User}
+    +createdAt: Date
+    +updatedAt: Date
+  }
+  
+  class Question <<Model>> {
+    +_id: ObjectId
+    +quizId: ObjectId {ref: Quiz}
+    +type: Enum {single, multi, true_false}
+    +text: String
+    +options: Array {embedded}
+    +correctOptionIds: String[]
+    +explanation: String
+    +points: Number
+    +order: Number
+    +createdAt: Date
+    +updatedAt: Date
+  }
+  
+  class Attempt <<Model>> {
+    +_id: ObjectId
+    +quizId: ObjectId {ref: Quiz}
+    +studentId: ObjectId {ref: User}
+    +status: Enum {in_progress, submitted, expired}
+    +startedAt: Date
+    +expiresAt: Date
+    +submittedAt: Date
+    +answers: Array {embedded}
+    +score: Number
+    +scorePercent: Number
+    +passed: Boolean
+    +createdAt: Date
+    +updatedAt: Date
+  }
+  
+  class Watch <<Model>> {
+    +_id: ObjectId
+    +state: String
+    +created_at: Date
+    +modified_at: Date
+    +lesson: ObjectId {ref: Lesson}
+    +module: ObjectId {ref: Module}
+    +user: ObjectId {ref: User}
+    +lastTime: Number
+  }
+  
+  class Report <<Model>> {
+    +_id: ObjectId
+    +totalCompletedLessons: Array
+    +totalCompletedModules: Array
+    +course: ObjectId {ref: Course}
+    +student: ObjectId {ref: User}
+    +quizAssessment: ObjectId {ref: Assessment}
+    +passedQuizIds: ObjectId[] {ref: Quiz}
+    +latestQuizAttemptByQuiz: Map
+    +completion_date: Date
+  }
+  
+  class Testimonial <<Model>> {
+    +_id: ObjectId
+    +content: String
+    +rating: Number
+    +courseId: ObjectId {ref: Course}
+    +user: ObjectId {ref: User}
+  }
+  
+  class Assessment <<Model>> {
+    +_id: ObjectId
+    +assessments: Array
+    +otherMarks: Number
+  }
+  
+  ' Model Associations
+  User "1" --> "*" Course : instructs
+  Category "1" --> "*" Course : categorizes
+  Course "1" --> "*" Module : contains
+  Module "1" --> "*" Lesson : contains
+  User "1" --> "*" Enrollment : enrolls
+  Course "1" --> "*" Enrollment : enrolled_in
+  Enrollment "0..1" --> "1" Payment : linked_to
+  User "1" --> "*" Payment : makes
+  Course "1" --> "*" Payment : purchased_for
+  Course "1" --> "*" Quiz : has
+  Lesson "0..1" --> "*" Quiz : may_have
+  User "1" --> "*" Quiz : creates
+  Quiz "1" --> "*" Question : contains
+  Quiz "1" --> "*" Attempt : attempted
+  User "1" --> "*" Attempt : takes
+  User "1" --> "*" Watch : watches
+  Lesson "0..1" --> "*" Watch : watched_in
+  Module "0..1" --> "*" Watch : watched_in
+  User "1" --> "*" Report : has_progress
+  Course "1" --> "*" Report : tracked_in
+  Quiz "*" --> "*" Report : passed_in
+  User "1" --> "*" Testimonial : writes
+  Course "1" --> "*" Testimonial : receives
+  Report "*" --> "0..1" Assessment : references (legacy)
+}
+
+' ============================================
+' PACKAGE: Queries (Repository Layer)
+' ============================================
+package "Queries" <<Repository>> {
+  
+  class CoursesQuery <<Repository>> {
+    +getCourseList(): Course[]
+    +getFeaturedCourses(limit): Course[]
+    +getCourseStats(): Object
+    +getCourseDetails(id): Course
+    +getCourseDetailsByInstructor(instructorId, expand): Object
+    +create(courseData): Course
+    +getCoursesByCategory(categoryId): Course[]
+    +getCategoryById(categoryId): Category
+    +getRelatedCourses(currentCourseId, categoryId): Course[]
+  }
+  
+  class EnrollmentsQuery <<Repository>> {
+    +getEnrollmentsForCourse(courseId): Enrollment[]
+    +enrollForCourse(courseId, userId, paymentMethod, paymentId): Enrollment
+    +getEnrollmentsForUser(userId): Enrollment[]
+    +hasEnrollmentForCourse(courseId, studentId): Boolean
+  }
+  
+  class PaymentsQuery <<Repository>> {
+    +createPayment(paymentData): Payment
+    +getPaymentBySessionId(sessionId): Payment
+    +getPaymentByReferenceId(referenceId): Payment
+    +getPaymentByPaymentIntentId(paymentIntentId): Payment
+    +getPaymentById(paymentId): Payment
+    +updatePaymentStatus(sessionId, status, additionalData): Payment
+    +getPaymentsForUser(userId): Payment[]
+    +getPaymentsForCourse(courseId): Payment[]
+    +paymentExistsBySessionId(sessionId): Boolean
+    +paymentExistsByReferenceId(referenceId): Boolean
+    +getCourseRevenue(courseId): Number
+  }
+  
+  class QuizV2Query <<Repository>> {
+    +getCourseQuizzes(courseId, options): Quiz[]
+    +getLessonQuiz(lessonId, options): Quiz
+    +getQuizWithQuestions(quizId): Quiz
+    +getStudentQuizStatusMap(courseId, studentId): Map
+    +getAttemptsForQuiz(quizId): Attempt[]
+    +getLatestStudentAttempt(quizId, studentId): Attempt
+    +getInProgressAttempt(quizId, studentId): Attempt
+    +getAttemptById(attemptId): Attempt
+  }
+  
+  class ModulesQuery <<Repository>> {
+    +create(moduleData): Module
+    +getModule(moduleId): Module
+    +getModuleBySlug(moduleSlug): Module
+  }
+  
+  class LessonsQuery <<Repository>> {
+    +getLesson(lessonId): Lesson
+    +create(lessonData): Lesson
+    +getLessonBySlug(slug): Lesson
+  }
+  
+  class ReportsQuery <<Repository>> {
+    +getReport(filter): Report
+    +createWatchReport(data): Report
+    +createAssessmentReport(data): Report
+  }
+  
+  class CategoriesQuery <<Repository>> {
+    +getCategories(): Category[]
+    +getCategoryDetails(categoryId): Category
+  }
+  
+  class TestimonialsQuery <<Repository>> {
+    +getTestimonialsForCourse(courseId): Testimonial[]
+    +getFeaturedTestimonials(limit): Testimonial[]
+  }
+  
+  class UsersQuery <<Repository>> {
+    +getUserByEmail(email): User
+    +getUserDetails(userId): User
+    +validatePassword(email, password): Boolean
+  }
+  
+  class AdminQuery <<Repository>> {
+    +getAdminStats(): Object
+    +getUsers(params): User[]
+    +getUserById(userId): User
+    +updateUserRole(userId, newRole): User
+    +updateUserStatus(userId, status): User
+    +deleteUser(userId, currentAdminId): Boolean
+    +bulkUpdateUsers(userIds, updates): Object
+    +getEnrollmentAnalytics(days): Object
+    +getRevenueAnalytics(days): Object
+    +getTopCourses(limit): Course[]
+  }
+  
+  class PaymentsAdminQuery <<Repository>> {
+    +getPaymentsForAdmin(params): Payment[]
+  }
+  
+  class AdminSetupQuery <<Repository>> {
+    +hasAdminUser(): Boolean
+    +createFirstAdmin(userData): User
+  }
+  
+  ' Query dependencies on Models
+  CoursesQuery ..> Course : uses
+  CoursesQuery ..> Category : uses
+  CoursesQuery ..> Module : uses
+  CoursesQuery ..> User : uses
+  CoursesQuery ..> Testimonial : uses
+  EnrollmentsQuery ..> Enrollment : uses
+  EnrollmentsQuery ..> Course : uses
+  PaymentsQuery ..> Payment : uses
+  QuizV2Query ..> Quiz : uses
+  QuizV2Query ..> Question : uses
+  QuizV2Query ..> Attempt : uses
+  ModulesQuery ..> Module : uses
+  LessonsQuery ..> Lesson : uses
+  ReportsQuery ..> Report : uses
+  CategoriesQuery ..> Category : uses
+  TestimonialsQuery ..> Testimonial : uses
+  UsersQuery ..> User : uses
+  AdminQuery ..> User : uses
+  AdminQuery ..> Course : uses
+  AdminQuery ..> Enrollment : uses
+  PaymentsAdminQuery ..> Payment : uses
+  AdminSetupQuery ..> User : uses
+}
+
+' ============================================
+' PACKAGE: Actions (Service Layer)
+' ============================================
+package "Actions" <<Service>> {
+  
+  class CourseAction <<Service>> {
+    +createCourse(data): Response
+    +updateCourse(courseId, dataToUpdate): Response
+    +changeCoursePublishState(courseId): Response
+    +deleteCourse(courseId): Response
+  }
+  
+  class ModuleAction <<Service>> {
+    +createModule(data): Response
+    +reOrderModules(data): Response
+    +updateModule(moduleId, data): Response
+    +changeModulePublishState(moduleId): Response
+    +deleteModule(moduleId, courseId): Response
+  }
+  
+  class LessonAction <<Service>> {
+    +createLesson(data): Response
+    +reOrderLesson(data): Response
+    +updateLesson(lessonId, data): Response
+    +changeLessonPublishState(lessonId): Response
+    +deleteLesson(lessonId, moduleId): Response
+  }
+  
+  class EnrollmentAction <<Service>> {
+    +enrollInFreeCourse(data): Response
+  }
+  
+  class QuizV2Action <<Service>> {
+    +createQuiz(courseId, lessonId, data): Response
+    +updateQuiz(quizId, data): Response
+    +deleteQuiz(quizId): Response
+    +publishQuiz(quizId, published): Response
+    +addQuestion(quizId, questionData): Response
+    +updateQuestion(questionId, questionData): Response
+    +deleteQuestion(questionId): Response
+    +reorderQuestions(quizId, orderedQuestionIds): Response
+    +startOrResumeAttempt(quizId): Response
+    +autosaveAttempt(attemptId, answers): Response
+    +submitAttempt(attemptId, answers): Response
+    +getAttemptResult(attemptId): Response
+  }
+  
+  class QuizProgressV2Action <<Service>> {
+    +updateQuizCompletionInReport(courseId, userId, quizId, lessonId): Response
+  }
+  
+  class ReviewAction <<Service>> {
+    +createReview(data, loginid, courseId): Response
+  }
+  
+  class AccountAction <<Service>> {
+    +updateUserInfo(email, updatedData): Response
+    +changePassword(email, oldPassword, newPassword, confirmPassword): Response
+  }
+  
+  class AdminAction <<Service>> {
+    +adminGetUsers(params): Response
+    +adminGetUser(userId): Response
+    +adminUpdateUserRole(userId, newRole): Response
+    +adminUpdateUserStatus(userId, status): Response
+    +adminDeleteUser(userId): Response
+    +adminBulkAction(userIds, action, options): Response
+  }
+  
+  class AdminCategoriesAction <<Service>> {
+    +adminGetCategories(): Response
+    +adminCreateCategory(data): Response
+    +adminUpdateCategory(categoryId, data): Response
+    +adminDeleteCategory(categoryId): Response
+  }
+  
+  class AdminCoursesAction <<Service>> {
+    +adminGetCourses(): Response
+    +adminGetCourse(courseId): Response
+    +adminUpdateCourseStatus(courseId, active): Response
+    +adminDeleteCourse(courseId): Response
+  }
+  
+  class AdminSetupAction <<Service>> {
+    +setupFirstAdmin(formData): Response
+    +isAdminSetupAvailable(): Response
+  }
+  
+  ' Action dependencies on Queries
+  CourseAction ..> CoursesQuery : uses
+  ModuleAction ..> ModulesQuery : uses
+  LessonAction ..> LessonsQuery : uses
+  EnrollmentAction ..> EnrollmentsQuery : uses
+  QuizV2Action ..> QuizV2Query : uses
+  QuizProgressV2Action ..> ReportsQuery : uses
+  ReviewAction ..> TestimonialsQuery : uses
+  AccountAction ..> UsersQuery : uses
+  AdminAction ..> AdminQuery : uses
+  AdminCategoriesAction ..> CategoriesQuery : uses
+  AdminCoursesAction ..> CoursesQuery : uses
+  AdminSetupAction ..> AdminSetupQuery : uses
+}
+
+' ============================================
+' PACKAGE: API (Controller Layer)
+' ============================================
+package "API" <<Controller>> {
+  
+  class AuthRoute <<Controller>> {
+    +GET(request): Response
+    +POST(request): Response
+  }
+  
+  class RegisterRoute <<Controller>> {
+    +POST(request): Response
+  }
+  
+  class MeRoute <<Controller>> {
+    +GET(request): Response
+  }
+  
+  class PaymentStatusRoute <<Controller>> {
+    +GET(request): Response
+  }
+  
+  class PaymentMockConfirmRoute <<Controller>> {
+    +POST(request): Response
+  }
+  
+  class QuizAttemptRoute <<Controller>> {
+    +GET(request, params): Response
+  }
+  
+  class LessonWatchRoute <<Controller>> {
+    +POST(request): Response
+  }
+  
+  class CertificateRoute <<Controller>> {
+    +GET(request, params): Response
+  }
+  
+  class UploadRoute <<Controller>> {
+    +POST(request): Response
+  }
+  
+  class UploadVideoRoute <<Controller>> {
+    +POST(request): Response
+    +DELETE(request): Response
+  }
+  
+  class VideoRoute <<Controller>> {
+    +GET(request, params): Response
+  }
+  
+  class ProfileAvatarRoute <<Controller>> {
+    +POST(request): Response
+  }
+  
+  ' API dependencies on Actions/Queries
+  PaymentStatusRoute ..> PaymentsQuery : uses
+  PaymentStatusRoute ..> EnrollmentsQuery : uses
+  PaymentMockConfirmRoute ..> PaymentsQuery : uses
+  PaymentMockConfirmRoute ..> EnrollmentsQuery : uses
+  QuizAttemptRoute ..> QuizV2Query : uses
+  LessonWatchRoute ..> ReportsQuery : uses
+  CertificateRoute ..> ReportsQuery : uses
+  CertificateRoute ..> EnrollmentsQuery : uses
+}
+
+' ============================================
+' PACKAGE: Auth/Security
+' ============================================
+package "Auth/Security" {
+  
+  class Auth <<Auth>> {
+    +auth(): Session
+    +signIn(credentials): Promise
+    +signOut(): Promise
+    +handlers: {GET, POST}
+  }
+  
+  class Middleware <<Middleware>> {
+    +default(req): NextResponse
+  }
+  
+  class Permissions <<Permissions>> {
+    +ROLES: Object
+    +PERMISSIONS: Object
+    +ROLE_PERMISSIONS: Object
+    +hasPermission(userRole, permission): Boolean
+    +hasAnyPermission(userRole, permissions): Boolean
+    +hasAllPermissions(userRole, permissions): Boolean
+    +isAdmin(userRole): Boolean
+    +isInstructor(userRole): Boolean
+    +isStudent(userRole): Boolean
+    +requireAdmin(userRole): void
+    +requirePermission(userRole, permission): void
+  }
+  
+  class Authorization <<Authorization>> {
+    +AuthorizationError: Class
+    +isAdmin(user): Boolean
+    +isInstructor(user): Boolean
+    +isAdminOrInstructor(user): Boolean
+    +assertInstructorOwnsCourse(courseId, userId, options): Promise
+    +verifyInstructorOwnsCourse(courseId, userId, user): Promise<Boolean>
+    +assertInstructorOwnsModule(moduleId, userId, user): Promise
+    +assertInstructorOwnsLesson(lessonId, userId, user): Promise
+    +verifyOwnsAllModules(moduleIds, userId, user): Promise<Boolean>
+    +verifyOwnsAllLessons(lessonIds, userId, user): Promise<Boolean>
+    +getCourseWithOwnershipCheck(courseId, userId, user): Promise<Course>
+  }
+  
+  ' Security dependencies
+  Middleware ..> Auth : uses
+  Middleware ..> Permissions : uses
+  Authorization ..> Permissions : uses
+  Authorization ..> Course : uses
+  Authorization ..> Module : uses
+  Authorization ..> Lesson : uses
+  Auth ..> User : uses
+}
+
+' ============================================
+' Cross-layer dependencies
+' ============================================
+Actions ..> Authorization : uses
+API ..> Authorization : uses
+
+note right of Models
+  **Domain Layer**
+  Mongoose schemas with
+  ObjectId references
+end note
+
+note right of Queries
+  **Repository Layer**
+  Data access functions
+  using Mongoose models
+end note
+
+note right of Actions
+  **Service Layer**
+  Server actions with
+  business logic
+end note
+
+note right of API
+  **Controller Layer**
+  HTTP route handlers
+  (Next.js API routes)
+end note
+
+legend right
+  | Stereotype | Meaning |
+  | <<Model>> | Mongoose schema/model |
+  | <<Repository>> | Data access layer |
+  | <<Service>> | Business logic layer |
+  | <<Controller>> | HTTP API handler |
+  | <<Auth>> | Authentication |
+  | <<Middleware>> | Request middleware |
+  | <<Permissions>> | Permission system |
+  | <<Authorization>> | Authorization checks |
+  |
+  | Arrow Type | Meaning |
+  | --> | Association (with multiplicity) |
+  | ..> | Dependency (uses) |
+  | -[dashed]-> | Optional/weak relationship |
+endlegend
+
+@enduml
