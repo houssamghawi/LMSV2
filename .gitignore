@@ -41,3 +41,14 @@ yarn-error.log*
 next-env.d.ts
 
 .uploads
+
+# Cursor IDE / Spec Kit (local only — never publish)
+.cursor/
+.specify/
+.chroma-data/
+specs/
+
+# Local agent / test tooling
+testsprite_tests/
+*.err.log
+*.out.log
